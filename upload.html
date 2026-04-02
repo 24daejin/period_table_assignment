@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원소 카드 업로드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #2a3550;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --text: #e8eaf0;
+    --text-muted: #7a8599;
+    --success: #34d399;
+    --danger: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(79,142,247,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,14,26,0.8);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo { font-family: 'Space Mono', monospace; font-size: 1rem; color: var(--accent); }
+  .logo span { color: var(--text-muted); }
+
+  .btn {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── 본문 ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .page-heading {
+    margin-bottom: 2rem;
+  }
+
+  .page-heading h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .page-heading p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── 학생 정보 배지 ── */
+  .user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+  }
+
+  .user-badge strong { color: var(--accent); }
+
+  /* ── 원소 탭 ── */
+  .element-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .element-tab {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .element-tab.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(79,142,247,0.08);
+  }
+
+  .element-tab .tab-sym {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .element-tab .tab-name { font-size: 0.75rem; }
+  .element-tab .tab-done { font-size: 0.7rem; color: var(--success); margin-top: 0.2rem; display: none; }
+  .element-tab.done .tab-done { display: block; }
+  .element-tab.done { border-color: var(--success); }
+
+  /* ── 업로드 섹션 ── */
+  .upload-section {
+    display: none;
+  }
+
+  .upload-section.active { display: block; }
+
+  .upload-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    .upload-pair { grid-template-columns: 1fr; }
+  }
+
+  .upload-box {
+    background: var(--surface);
+    border: 1.5px dashed var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .upload-box:hover { border-color: var(--accent); background: rgba(79,142,247,0.04); }
+  .upload-box.dragover { border-color: var(--accent); background: rgba(79,142,247,0.1); }
+  .upload-box.has-file { border-style: solid; border-color: var(--success); }
+
+  .upload-box input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon { font-size: 2rem; pointer-events: none; }
+
+  .upload-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    pointer-events: none;
+  }
+
+  .upload-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .preview-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+    display: none;
+  }
+
+  .preview-img.show { display: block; }
+
+  .preview-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--success);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    pointer-events: none;
+    display: none;
+  }
+
+  .preview-badge.show { display: block; }
+
+  /* ── 제출 버튼 ── */
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s, opacity 0.2s;
+    margin-bottom: 1rem;
+  }
+
+  .submit-btn:hover:not(:disabled) { background: #3a7de8; }
+  .submit-btn:active:not(:disabled) { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── 상태 메시지 ── */
+  .status-msg {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+    display: none;
+    margin-bottom: 1rem;
+  }
+
+  .status-msg.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--danger); display: block; }
+  .status-msg.success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--success); display: block; }
+  .status-msg.loading { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); display: block; }
+
+  /* ── 진행바 ── */
+  .upload-progress { display: none; margin-bottom: 1rem; }
+  .upload-progress.show { display: block; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.3s; width: 0%; }
+  .progress-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+  /* ── 안내 박스 ── */
+  .info-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+
+  .info-box strong { color: var(--text); }
+
+  /* ── 미인증 화면 ── */
+  #not-logged {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  #not-logged p { color: var(--text-muted); font-size: 0.95rem; }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚛ 원소<span>카드</span> · 업로드</div>
+  <a href="index.html" class="btn">← 주기율표로</a>
+</header>
+
+<!-- 미인증 -->
+<div id="not-logged" style="display:none">
+  <p style="font-size:2rem">🔒</p>
+  <p>로그인 후 이용할 수 있습니다.</p>
+  <a href="index.html" class="btn">로그인 하러 가기</a>
+</div>
+
+<!-- 업로드 본문 -->
+<div class="page" id="upload-page" style="display:none">
+
+  <div class="page-heading">
+    <h1>내 원소 카드 업로드</h1>
+    <p>캔바에서 만든 카드를 PNG로 내보낸 뒤 아래에 올려주세요.</p>
+  </div>
+
+  <div class="user-badge" id="user-badge"></div>
+
+  <div class="info-box">
+    <strong>파일 안내</strong><br>
+    · PNG 또는 JPG 파일, 파일당 <strong>5MB 이하</strong><br>
+    · 캔바 → 공유 → 다운로드 → PNG 선택<br>
+    · 앞면(기본 정보)과 뒷면(추가 정보)을 각각 업로드해야 합니다<br>
+    · 이미 업로드한 파일을 다시 올리면 <strong>덮어쓰기</strong>됩니다
+  </div>
+
+  <!-- 원소 탭 -->
+  <div class="element-tabs" id="element-tabs"></div>
+
+  <!-- 원소별 업로드 섹션 -->
+  <div id="upload-sections"></div>
+
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import firebaseConfig from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ── 원소 데이터 (이름만 필요) ──
+const ELEMENT_NAMES = {
+  1:'수소',2:'헬륨',3:'리튬',4:'베릴륨',5:'붕소',6:'탄소',7:'질소',8:'산소',
+  9:'플루오린',10:'네온',11:'나트륨',12:'마그네슘',13:'알루미늄',14:'규소',
+  15:'인',16:'황',17:'염소',18:'아르곤',19:'칼륨',20:'칼슘',21:'스칸듐',
+  22:'타이타늄',23:'바나듐',24:'크로뮴',25:'망가니즈',26:'철',27:'코발트',
+  28:'니켈',29:'구리',30:'아연',31:'갈륨',32:'저마늄',33:'비소',34:'셀레늄',
+  35:'브로민',36:'크립톤',37:'루비듐',38:'스트론튬',39:'이트륨',40:'지르코늄',
+  41:'나이오븀',42:'몰리브데넘',43:'테크네튬',44:'루테늄',45:'로듐',46:'팔라듐',
+  47:'은',48:'카드뮴',49:'인듐',50:'주석',51:'안티모니',52:'텔루륨',
+  53:'아이오딘',54:'제논',55:'세슘',56:'바륨',57:'란타넘',58:'세륨',
+  79:'금',80:'수은',82:'납',92:'우라늄'
+};
+
+const ELEMENT_SYMBOLS = {
+  1:'H',2:'He',3:'Li',4:'Be',5:'B',6:'C',7:'N',8:'O',9:'F',10:'Ne',
+  11:'Na',12:'Mg',13:'Al',14:'Si',15:'P',16:'S',17:'Cl',18:'Ar',19:'K',20:'Ca',
+  21:'Sc',22:'Ti',23:'V',24:'Cr',25:'Mn',26:'Fe',27:'Co',28:'Ni',29:'Cu',30:'Zn',
+  31:'Ga',32:'Ge',33:'As',34:'Se',35:'Br',36:'Kr',37:'Rb',38:'Sr',39:'Y',40:'Zr',
+  41:'Nb',42:'Mo',43:'Tc',44:'Ru',45:'Rh',46:'Pd',47:'Ag',48:'Cd',49:'In',50:'Sn',
+  51:'Sb',52:'Te',53:'I',54:'Xe',55:'Cs',56:'Ba',57:'La',58:'Ce',79:'Au',80:'Hg',82:'Pb',92:'U'
+};
+
+// ── 인증 확인 ──
+let user = null;
+
+async function init() {
+  const saved = sessionStorage.getItem('user');
+  if (!saved) {
+    document.getElementById('not-logged').style.display = 'flex';
+    return;
+  }
+
+  user = JSON.parse(saved);
+  document.getElementById('upload-page').style.display = 'block';
+  document.getElementById('user-badge').innerHTML =
+    `👤 <strong>${user.name}</strong> (${user.studentId}) · 담당 원소: <strong>${user.elements.join(', ')}번</strong>`;
+
+  buildUI();
+  await loadExisting();
+}
+
+// ── UI 구성 ──
+const fileState = {}; // { elementNo: { front: File|null, back: File|null } }
+
+function buildUI() {
+  const tabsEl = document.getElementById('element-tabs');
+  const sectionsEl = document.getElementById('upload-sections');
+
+  user.elements.forEach((no, idx) => {
+    fileState[no] = { front: null, back: null };
+    const sym = ELEMENT_SYMBOLS[no] || `#${no}`;
+    const name = ELEMENT_NAMES[no] || `원소 ${no}`;
+
+    // 탭
+    const tab = document.createElement('div');
+    tab.className = `element-tab ${idx === 0 ? 'active' : ''}`;
+    tab.id = `tab-${no}`;
+    tab.innerHTML = `
+      <span class="tab-sym">${sym}</span>
+      <span class="tab-name">${name}</span>
+      <span class="tab-done">✓ 완료</span>`;
+    tab.onclick = () => switchTab(no);
+    tabsEl.appendChild(tab);
+
+    // 섹션
+    const sec = document.createElement('div');
+    sec.className = `upload-section ${idx === 0 ? 'active' : ''}`;
+    sec.id = `section-${no}`;
+    sec.innerHTML = `
+      <div class="upload-pair">
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:500">앞면 · 기본 정보</p>
+          <div class="upload-box" id="box-front-${no}">
+            <input type="file" accept="image/*" onchange="handleFile(event, ${no}, 'front')">
+            <img class="preview-img" id="prev-front-${no}">
+            <div class="preview-badge" id="badge-front-${no}">✓</div>
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-label">앞면 이미지</div>
+            <div class="upload-sub">클릭 또는 드래그</div>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:500">뒷면 · 추가 정보</p>
+          <div class="upload-box" id="box-back-${no}">
+            <input type="file" accept="image/*" onchange="handleFile(event, ${no}, 'back')">
+            <img class="preview-img" id="prev-back-${no}">
+            <div class="preview-badge" id="badge-back-${no}">✓</div>
+            <div class="upload-icon">📋</div>
+            <div class="upload-label">뒷면 이미지</div>
+            <div class="upload-sub">클릭 또는 드래그</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="upload-progress" id="prog-${no}">
+        <div class="progress-label" id="prog-label-${no}">업로드 중...</div>
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill-${no}"></div></div>
+      </div>
+
+      <div class="status-msg" id="status-${no}"></div>
+
+      <button class="submit-btn" onclick="submitCard(${no})" id="submit-${no}">
+        ${sym} (${name}) 카드 제출하기
+      </button>`;
+    sectionsEl.appendChild(sec);
+
+    // 드래그앤드롭
+    ['front','back'].forEach(side => {
+      const box = sec.querySelector(`#box-${side}-${no}`);
+      box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('dragover'); });
+      box.addEventListener('dragleave', () => box.classList.remove('dragover'));
+      box.addEventListener('drop', e => {
+        e.preventDefault();
+        box.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) applyFile(no, side, file);
+      });
+    });
+  });
+}
+
+function switchTab(no) {
+  user.elements.forEach(n => {
+    document.getElementById(`tab-${n}`)?.classList.remove('active');
+    document.getElementById(`section-${n}`)?.classList.remove('active');
+  });
+  document.getElementById(`tab-${no}`)?.classList.add('active');
+  document.getElementById(`section-${no}`)?.classList.add('active');
+}
+
+// ── 파일 선택 ──
+window.handleFile = function(e, no, side) {
+  const file = e.target.files[0];
+  if (file) applyFile(no, side, file);
+};
+
+function applyFile(no, side, file) {
+  if (!file.type.startsWith('image/')) {
+    showStatus(no, 'error', '이미지 파일만 업로드할 수 있습니다.');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus(no, 'error', '파일 크기가 5MB를 초과합니다.');
+    return;
+  }
+
+  fileState[no][side] = file;
+
+  const prevImg = document.getElementById(`prev-${side}-${no}`);
+  const badge = document.getElementById(`badge-${side}-${no}`);
+  const box = document.getElementById(`box-${side}-${no}`);
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    prevImg.src = e.target.result;
+    prevImg.classList.add('show');
+    badge.classList.add('show');
+    box.classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+
+  showStatus(no, '', '');
+}
+
+// ── 기존 업로드 데이터 불러오기 ──
+async function loadExisting() {
+  for (const no of user.elements) {
+    const snap = await getDoc(doc(db, 'elements', String(no)));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.frontUrl) setExistingPreview(no, 'front', data.frontUrl);
+      if (data.backUrl)  setExistingPreview(no, 'back',  data.backUrl);
+      if (data.frontUrl && data.backUrl) markTabDone(no);
+    }
+  }
+}
+
+function setExistingPreview(no, side, url) {
+  const prevImg = document.getElementById(`prev-${side}-${no}`);
+  const badge = document.getElementById(`badge-${side}-${no}`);
+  const box = document.getElementById(`box-${side}-${no}`);
+  if (prevImg) {
+    prevImg.src = url;
+    prevImg.classList.add('show');
+    badge.classList.add('show');
+    box.classList.add('has-file');
+  }
+}
+
+function markTabDone(no) {
+  document.getElementById(`tab-${no}`)?.classList.add('done');
+}
+
+// ── 업로드 실행 ──
+window.submitCard = async function(no) {
+  const { front, back } = fileState[no];
+
+  if (!front && !back) {
+    showStatus(no, 'error', '앞면 또는 뒷면 이미지를 선택해 주세요.');
+    return;
+  }
+
+  const btn = document.getElementById(`submit-${no}`);
+  btn.disabled = true;
+
+  try {
+    showStatus(no, 'loading', '업로드 중... 잠시 기다려 주세요.');
+    showProgress(no, true);
+
+    const existing = (await getDoc(doc(db, 'elements', String(no)))).data() || {};
+    let frontUrl = existing.frontUrl || '';
+    let backUrl  = existing.backUrl  || '';
+
+    // 앞면 업로드
+    if (front) {
+      setProgressLabel(no, '앞면 업로드 중...');
+      frontUrl = await uploadFile(front, `elements/${user.studentId}/${no}_front`, no, 0, 50);
+    }
+
+    // 뒷면 업로드
+    if (back) {
+      setProgressLabel(no, '뒷면 업로드 중...');
+      backUrl = await uploadFile(back, `elements/${user.studentId}/${no}_back`, no, 50, 100);
+    }
+
+    // Firestore 저장
+    setProgressLabel(no, '저장 중...');
+    await setDoc(doc(db, 'elements', String(no)), {
+      studentId: user.studentId,
+      studentName: user.name,
+      elementNo: no,
+      frontUrl,
+      backUrl,
+      updatedAt: new Date().toISOString()
+    });
+
+    showProgress(no, false);
+    showStatus(no, 'success', '✓ 업로드 완료! 주기율표에 바로 반영됩니다.');
+    markTabDone(no);
+    fileState[no] = { front: null, back: null };
+
+  } catch (err) {
+    console.error(err);
+    showProgress(no, false);
+    showStatus(no, 'error', `오류가 발생했습니다: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+function uploadFile(file, path, no, progressStart, progressEnd) {
+  return new Promise((resolve, reject) => {
+    const storageRef = ref(storage, path);
+    const task = uploadBytesResumable(storageRef, file);
+
+    task.on('state_changed',
+      snap => {
+        const pct = (snap.bytesTransferred / snap.totalBytes) * (progressEnd - progressStart) + progressStart;
+        setProgressFill(no, pct);
+      },
+      reject,
+      async () => {
+        const url = await getDownloadURL(task.snapshot.ref);
+        resolve(url);
+      }
+    );
+  });
+}
+
+// ── 상태 표시 헬퍼 ──
+function showStatus(no, type, msg) {
+  const el = document.getElementById(`status-${no}`);
+  el.className = `status-msg${type ? ' ' + type : ''}`;
+  el.textContent = msg;
+}
+
+function showProgress(no, show) {
+  document.getElementById(`prog-${no}`)?.classList.toggle('show', show);
+  if (!show) setProgressFill(no, 0);
+}
+
+function setProgressFill(no, pct) {
+  const el = document.getElementById(`prog-fill-${no}`);
+  if (el) el.style.width = `${Math.round(pct)}%`;
+}
+
+function setProgressLabel(no, msg) {
+  const el = document.getElementById(`prog-label-${no}`);
+  if (el) el.textContent = msg;
+}
+
+init();
+</script>
+</body>
+</html>
