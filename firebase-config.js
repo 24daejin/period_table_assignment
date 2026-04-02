@@ -4,12 +4,12 @@
 // ================================================================
 
 const firebaseConfig = {
-  apiKey: "여기에_apiKey_붙여넣기",
-  authDomain: "여기에_authDomain_붙여넣기",
-  projectId: "여기에_projectId_붙여넣기",
-  storageBucket: "여기에_storageBucket_붙여넣기",
-  messagingSenderId: "여기에_messagingSenderId_붙여넣기",
-  appId: "여기에_appId_붙여넣기"
+  apiKey: "AIzaSyBwcCAPlQqZW9avpDjXJ7RT11XlzijmHlg",
+  authDomain: "element-card-2026.firebaseapp.com",
+  projectId: "element-card-2026",
+  storageBucket: "element-card-2026.firebasestorage.app",
+  messagingSenderId: "255594511893",
+  appId: "1:255594511893:web:6077d1adecc153fa6d181c"
 };
 
 export default firebaseConfig;
