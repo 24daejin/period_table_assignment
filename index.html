@@ -3,623 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>우리 반 원소 주기율표</title>
+<title>원소 주기율표</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0e1a;
-    --surface: #111827;
-    --surface2: #1a2235;
-    --border: #2a3550;
-    --accent: #4f8ef7;
-    --accent2: #7c5cfc;
-    --text: #e8eaf0;
-    --text-muted: #7a8599;
-    --success: #34d399;
-    --empty: #1e2a3a;
-
-    /* 원소 분류 색상 */
-    --col-alkali: #ef4444;
-    --col-alkali-earth: #f97316;
-    --col-transition: #3b82f6;
-    --col-post-transition: #8b5cf6;
-    --col-metalloid: #10b981;
-    --col-nonmetal: #f59e0b;
-    --col-halogen: #ec4899;
-    --col-noble: #06b6d4;
-    --col-lanthanide: #84cc16;
-    --col-actinide: #a855f7;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── 배경 효과 ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(79,142,247,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(124,92,252,0.06) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── 헤더 ── */
-  header {
-    position: relative;
-    z-index: 10;
-    padding: 1.5rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: rgba(10,14,26,0.8);
-    backdrop-filter: blur(12px);
-  }
-
-  .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 1.1rem;
-    color: var(--accent);
-    letter-spacing: -0.02em;
-  }
-
-  .logo span { color: var(--text-muted); }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  #user-info {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    display: none;
-  }
-
-  #user-info strong { color: var(--accent); }
-
-  .btn {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.85rem;
-    padding: 0.5rem 1.1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    font-weight: 500;
-  }
-
-  .btn-primary:hover { background: #3a7de8; color: #fff; border-color: #3a7de8; }
-
-  /* ── 로그인 화면 ── */
-  #login-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-  }
-
-  #login-screen::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 50% 40%, rgba(79,142,247,0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .login-card {
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2.5rem;
-    width: min(420px, 90vw);
-    text-align: center;
-  }
-
-  .login-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    display: block;
-  }
-
-  .login-card h1 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-  }
-
-  .login-card p {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-  }
-
-  .form-group {
-    text-align: left;
-    margin-bottom: 1rem;
-  }
-
-  .form-group label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 0.4rem;
-    font-weight: 500;
-  }
-
-  .form-group input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus { border-color: var(--accent); }
-
-  #login-error {
-    font-size: 0.85rem;
-    color: #f87171;
-    margin-bottom: 1rem;
-    display: none;
-  }
-
-  .login-btn {
-    width: 100%;
-    padding: 0.85rem;
-    background: var(--accent);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-  }
-
-  .login-btn:hover { background: #3a7de8; }
-  .login-btn:active { transform: scale(0.98); }
-
-  .login-note {
-    margin-top: 1.2rem;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  /* ── 메인 레이아웃 ── */
-  #main-screen { display: none; }
-
-  .page-title {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    padding: 2rem 1rem 1.5rem;
-  }
-
-  .page-title h2 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.4rem;
-  }
-
-  .page-title p {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-  }
-
-  /* ── 범례 ── */
-  .legend {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-    padding: 0 1rem 1.5rem;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-
-  .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── 주기율표 컨테이너 ── */
-  .periodic-wrapper {
-    position: relative;
-    z-index: 1;
-    overflow-x: auto;
-    padding: 0 1rem 2rem;
-  }
-
-  .periodic-table {
-    display: grid;
-    grid-template-columns: repeat(18, minmax(52px, 1fr));
-    gap: 3px;
-    min-width: 980px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  /* ── 원소 셀 ── */
-  .element-cell {
-    aspect-ratio: 1;
-    border-radius: 8px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.15s, box-shadow 0.15s;
-    border: 1px solid transparent;
-  }
-
-  .element-cell:hover {
-    transform: scale(1.08);
-    z-index: 10;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
-
-  /* 빈 셀 */
-  .element-cell.empty {
-    background: transparent;
-    cursor: default;
-  }
-
-  .element-cell.empty:hover { transform: none; box-shadow: none; }
-
-  /* 미제출 */
-  .element-cell.no-card {
-    background: var(--empty);
-    border-color: var(--border);
-  }
-
-  .element-cell.no-card .cell-symbol {
-    color: var(--text-muted);
-    opacity: 0.5;
-  }
-
-  .element-cell.no-card .cell-number {
-    color: var(--text-muted);
-    opacity: 0.4;
-  }
-
-  /* 카드 있음 */
-  .element-cell.has-card {
-    border-color: rgba(255,255,255,0.1);
-  }
-
-  .element-cell.has-card .card-front {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-  }
-
-  .element-cell.has-card .card-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 4px;
-  }
-
-  .cell-number {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.55rem;
-    line-height: 1;
-    color: rgba(255,255,255,0.7);
-    position: absolute;
-    top: 3px;
-    left: 4px;
-  }
-
-  .cell-symbol {
-    font-family: 'Space Mono', monospace;
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1;
-    color: #fff;
-    text-align: center;
-    width: 100%;
-  }
-
-  .cell-name {
-    font-size: 0.5rem;
-    color: rgba(255,255,255,0.75);
-    text-align: center;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* 분류별 기본 색상 (미제출 시 배경) */
-  .element-cell.no-card.alkali       { border-left: 2px solid var(--col-alkali); }
-  .element-cell.no-card.alkali-earth { border-left: 2px solid var(--col-alkali-earth); }
-  .element-cell.no-card.transition   { border-left: 2px solid var(--col-transition); }
-  .element-cell.no-card.post-transition { border-left: 2px solid var(--col-post-transition); }
-  .element-cell.no-card.metalloid    { border-left: 2px solid var(--col-metalloid); }
-  .element-cell.no-card.nonmetal     { border-left: 2px solid var(--col-nonmetal); }
-  .element-cell.no-card.halogen      { border-left: 2px solid var(--col-halogen); }
-  .element-cell.no-card.noble        { border-left: 2px solid var(--col-noble); }
-  .element-cell.no-card.lanthanide   { border-left: 2px solid var(--col-lanthanide); }
-  .element-cell.no-card.actinide     { border-left: 2px solid var(--col-actinide); }
-
-  /* 란타넘·악티늄 구분 행 */
-  .period-gap { grid-column: 1 / -1; height: 6px; }
-
-  /* ── 진행 현황 ── */
-  .progress-bar-wrap {
-    position: relative;
-    z-index: 1;
-    max-width: 600px;
-    margin: 0 auto 1.5rem;
-    padding: 0 1.5rem;
-  }
-
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 0.4rem;
-  }
-
-  .progress-bar {
-    height: 6px;
-    background: var(--border);
-    border-radius: 99px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 99px;
-    transition: width 0.8s ease;
-    width: 0%;
-  }
-
-  /* ── 모달 오버레이 ── */
-  #modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(6px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-
-  #modal-overlay.active { display: flex; }
-
-  .modal-card {
-    width: min(520px, 90vw);
-    max-height: 85vh;
-    perspective: 1000px;
-    position: relative;
-  }
-
-  .card-flipper {
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .card-flipper.flipped { transform: rotateY(180deg); }
-
-  .card-face {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    overflow: hidden;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    border: 1px solid var(--border);
-  }
-
-  .card-face img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .card-face-back {
-    transform: rotateY(180deg);
-  }
-
-  .card-face.no-image {
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .card-face.no-image span {
-    font-size: 3rem;
-  }
-
-  .card-face.no-image p {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-  }
-
-  .modal-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 1rem;
-    gap: 0.75rem;
-  }
-
-  .modal-element-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    flex: 1;
-  }
-
-  .modal-element-sub {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  .flip-btn {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .flip-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .close-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-
-  .close-btn:hover { border-color: #f87171; color: #f87171; }
-
-  /* ── 로딩 ── */
-  .loading-spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── 반응형 ── */
-  @media (max-width: 600px) {
-    header { padding: 1rem; }
-    .logo { font-size: 0.95rem; }
-  }
+  :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;
+    --accent:#4f8ef7;--accent2:#7c5cfc;--text:#e8eaf0;--text-muted:#7a8599;
+    --success:#34d399;--empty:#1e2a3a;
+    --col-alkali:#ef4444;--col-alkali-earth:#f97316;--col-transition:#3b82f6;
+    --col-post-transition:#8b5cf6;--col-metalloid:#10b981;--col-nonmetal:#f59e0b;
+    --col-halogen:#ec4899;--col-noble:#06b6d4;--col-lanthanide:#84cc16;--col-actinide:#a855f7;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(79,142,247,.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(124,92,252,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+  /* 잘못된 URL 안내 */
+  #error-screen{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:2rem;background:var(--bg);}
+  #error-screen p{color:var(--text-muted);font-size:.95rem;line-height:1.7;}
+  #error-screen h2{font-size:1.3rem;}
+
+  /* 헤더 */
+  header{position:relative;z-index:10;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(10,14,26,.8);backdrop-filter:blur(12px);gap:1rem;flex-wrap:wrap;}
+  .logo{font-family:'Space Mono',monospace;font-size:1rem;color:var(--accent);white-space:nowrap;}
+  .logo span{color:var(--text-muted);}
+  .header-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;}
+  #user-info{font-size:.82rem;color:var(--text-muted);display:none;}
+  #user-info strong{color:var(--accent);}
+  .btn{font-family:'Noto Sans KR',sans-serif;font-size:.82rem;padding:.45rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* 로그인 */
+  #login-screen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+  #login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(79,142,247,.12) 0%,transparent 70%);pointer-events:none;}
+  .login-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:min(420px,90vw);text-align:center;}
+  .login-icon{font-size:2.2rem;margin-bottom:.8rem;display:block;}
+  .login-title{font-size:1.3rem;font-weight:700;margin-bottom:.3rem;}
+  .login-cls-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:.85rem;background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);color:var(--accent);border-radius:6px;padding:.25rem .8rem;margin-bottom:1.2rem;}
+  .login-desc{font-size:.88rem;color:var(--text-muted);margin-bottom:1.8rem;line-height:1.6;}
+  .form-group{text-align:left;margin-bottom:.9rem;}
+  .form-group label{display:block;font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;font-weight:500;}
+  .form-group input{width:100%;padding:.7rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:.92rem;outline:none;transition:border-color .2s;}
+  .form-group input:focus{border-color:var(--accent);}
+  #login-error{font-size:.83rem;color:#f87171;margin-bottom:.9rem;display:none;}
+  .login-btn{width:100%;padding:.85rem;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:background .2s,transform .1s;}
+  .login-btn:hover{background:#3a7de8;}
+  .login-btn:active{transform:scale(.98);}
+  .login-note{margin-top:1rem;font-size:.78rem;color:var(--text-muted);}
+
+  /* 메인 */
+  #main-screen{display:none;}
+  .page-title{position:relative;z-index:1;text-align:center;padding:1.8rem 1rem 1.2rem;}
+  .page-title h2{font-size:1.4rem;font-weight:700;margin-bottom:.3rem;}
+  .class-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:.8rem;background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);color:var(--accent);border-radius:6px;padding:.2rem .7rem;margin-bottom:.4rem;}
+  .page-title p{font-size:.88rem;color:var(--text-muted);}
+
+  .progress-bar-wrap{position:relative;z-index:1;max-width:560px;margin:0 auto 1.2rem;padding:0 1.5rem;}
+  .progress-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;}
+  .progress-bar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .8s ease;width:0%;}
+
+  .legend{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;padding:0 1rem 1.2rem;}
+  .legend-item{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--text-muted);}
+  .legend-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+
+  .periodic-wrapper{position:relative;z-index:1;overflow-x:auto;padding:0 1rem 3rem;}
+  .periodic-table{display:grid;grid-template-columns:repeat(18,minmax(52px,1fr));gap:3px;min-width:980px;max-width:1200px;margin:0 auto;}
+
+  .element-cell{aspect-ratio:1;border-radius:8px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;border:1px solid transparent;}
+  .element-cell:hover{transform:scale(1.08);z-index:10;box-shadow:0 4px 20px rgba(0,0,0,.5);}
+  .element-cell.empty{background:transparent;cursor:default;}
+  .element-cell.empty:hover{transform:none;box-shadow:none;}
+  .element-cell.no-card{background:var(--empty);border-color:var(--border);}
+  .element-cell.has-card .card-front{position:absolute;inset:0;background-size:cover;background-position:center;}
+  .element-cell.has-card .card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);display:flex;flex-direction:column;justify-content:flex-end;padding:4px;}
+  .cell-number{font-family:'Space Mono',monospace;font-size:.55rem;line-height:1;color:rgba(255,255,255,.7);position:absolute;top:3px;left:4px;}
+  .cell-symbol{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;line-height:1;color:#fff;text-align:center;width:100%;}
+  .cell-name{font-size:.5rem;color:rgba(255,255,255,.75);text-align:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .element-cell.no-card.alkali{border-left:2px solid var(--col-alkali);}
+  .element-cell.no-card.alkali-earth{border-left:2px solid var(--col-alkali-earth);}
+  .element-cell.no-card.transition{border-left:2px solid var(--col-transition);}
+  .element-cell.no-card.post-transition{border-left:2px solid var(--col-post-transition);}
+  .element-cell.no-card.metalloid{border-left:2px solid var(--col-metalloid);}
+  .element-cell.no-card.nonmetal{border-left:2px solid var(--col-nonmetal);}
+  .element-cell.no-card.halogen{border-left:2px solid var(--col-halogen);}
+  .element-cell.no-card.noble{border-left:2px solid var(--col-noble);}
+  .element-cell.no-card.lanthanide{border-left:2px solid var(--col-lanthanide);}
+  .element-cell.no-card.actinide{border-left:2px solid var(--col-actinide);}
+
+  /* 모달 */
+  #modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;}
+  #modal-overlay.active{display:flex;}
+  .modal-card{width:min(500px,90vw);perspective:1000px;}
+  .card-flipper{position:relative;width:100%;padding-bottom:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);}
+  .card-flipper.flipped{transform:rotateY(180deg);}
+  .card-face{position:absolute;inset:0;border-radius:20px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--border);}
+  .card-face img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card-face-back{transform:rotateY(180deg);}
+  .card-face.no-image{background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem;}
+  .card-face.no-image span{font-size:3rem;}
+  .card-face.no-image p{color:var(--text-muted);font-size:.9rem;}
+  .modal-controls{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;gap:.75rem;}
+  .modal-element-name{font-size:1.1rem;font-weight:700;flex:1;}
+  .modal-element-sub{font-size:.78rem;color:var(--text-muted);}
+  .flip-btn{font-family:'Noto Sans KR',sans-serif;font-size:.8rem;padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .flip-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .close-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+  .close-btn:hover{border-color:#f87171;color:#f87171;}
+  .loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
+
+<!-- 잘못된 URL 안내 -->
+<div id="error-screen">
+  <p style="font-size:2rem">⚠️</p>
+  <h2>학급 정보가 없습니다</h2>
+  <p>올바른 URL로 접속해 주세요.<br>예: <code style="color:var(--accent)">?class=2-1</code></p>
+</div>
 
 <header>
   <div class="logo">⚛ 원소<span>카드</span></div>
   <div class="header-right">
     <div id="user-info"></div>
-    <button class="btn" id="upload-btn" style="display:none" onclick="location.href='upload.html'">내 카드 업로드</button>
+    <button class="btn" id="upload-btn" style="display:none" onclick="goUpload()">내 카드 업로드</button>
     <button class="btn" id="logout-btn" style="display:none" onclick="logout()">로그아웃</button>
   </div>
 </header>
 
-<!-- 로그인 화면 -->
+<!-- 로그인 -->
 <div id="login-screen">
   <div class="login-card">
     <span class="login-icon">🔬</span>
-    <h1>우리 반 원소 주기율표</h1>
-    <p>학번과 이름을 입력하면<br>주기율표를 함께 완성할 수 있어요</p>
-
+    <p class="login-title">원소 주기율표</p>
+    <div class="login-cls-badge" id="login-cls-badge"></div>
+    <p class="login-desc">학번과 이름을 입력하면<br>주기율표를 함께 완성할 수 있어요</p>
     <div class="form-group">
       <label>학번</label>
-      <input type="text" id="input-student-id" placeholder="예: 20251001" maxlength="10"
-             onkeydown="if(event.key==='Enter') tryLogin()">
+      <input type="text" id="input-student-id" placeholder="예: 20251001" maxlength="10" onkeydown="if(event.key==='Enter')tryLogin()">
     </div>
     <div class="form-group">
       <label>이름</label>
-      <input type="text" id="input-name" placeholder="홍길동"
-             onkeydown="if(event.key==='Enter') tryLogin()">
+      <input type="text" id="input-name" placeholder="홍길동" onkeydown="if(event.key==='Enter')tryLogin()">
     </div>
-
-    <div id="login-error">학번 또는 이름이 일치하지 않습니다.</div>
+    <div id="login-error"></div>
     <button class="login-btn" onclick="tryLogin()">입장하기</button>
     <p class="login-note">로그인 정보는 이 기기에만 저장됩니다</p>
   </div>
 </div>
 
-<!-- 메인 화면 -->
+<!-- 메인 -->
 <div id="main-screen">
   <div class="page-title">
+    <div class="class-badge" id="class-badge"></div>
     <h2>우리 반 원소 주기율표</h2>
     <p id="progress-text">카드를 불러오는 중... <span class="loading-spinner"></span></p>
   </div>
-
   <div class="progress-bar-wrap">
-    <div class="progress-label">
-      <span>완성도</span>
-      <span id="progress-count">0 / 0</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
+    <div class="progress-label"><span>완성도</span><span id="progress-count">0 / 0</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   </div>
-
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--col-alkali)"></div>알칼리 금속</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--col-alkali-earth)"></div>알칼리 토금속</div>
@@ -632,7 +174,6 @@
     <div class="legend-item"><div class="legend-dot" style="background:var(--col-lanthanide)"></div>란타넘족</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--col-actinide)"></div>악티늄족</div>
   </div>
-
   <div class="periodic-wrapper">
     <div class="periodic-table" id="periodic-table"></div>
   </div>
@@ -643,12 +184,12 @@
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="card-flipper" id="card-flipper">
       <div class="card-face card-face-front" id="modal-front"></div>
-      <div class="card-face card-face-back" id="modal-back"></div>
+      <div class="card-face card-face-back"  id="modal-back"></div>
     </div>
     <div class="modal-controls">
       <div>
         <div class="modal-element-name" id="modal-name"></div>
-        <div class="modal-element-sub" id="modal-sub"></div>
+        <div class="modal-element-sub"  id="modal-sub"></div>
       </div>
       <button class="flip-btn" onclick="flipCard()">뒤집기 🔄</button>
       <button class="close-btn" onclick="closeModalBtn()">✕</button>
@@ -656,279 +197,264 @@
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import firebaseConfig from "./firebase-config.js";
 
-// ── Firebase 초기화 ──
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
-// ── 원소 데이터 (기호, 이름, 주기율표 위치, 분류) ──
-// [번호, 기호, 이름, 행, 열, 분류]
 const ELEMENTS = [
-  [1,'H','수소',1,1,'nonmetal'], [2,'He','헬륨',1,18,'noble'],
-  [3,'Li','리튬',2,1,'alkali'], [4,'Be','베릴륨',2,2,'alkali-earth'],
-  [5,'B','붕소',2,13,'metalloid'], [6,'C','탄소',2,14,'nonmetal'],
-  [7,'N','질소',2,15,'nonmetal'], [8,'O','산소',2,16,'nonmetal'],
-  [9,'F','플루오린',2,17,'halogen'], [10,'Ne','네온',2,18,'noble'],
-  [11,'Na','나트륨',3,1,'alkali'], [12,'Mg','마그네슘',3,2,'alkali-earth'],
-  [13,'Al','알루미늄',3,13,'post-transition'], [14,'Si','규소',3,14,'metalloid'],
-  [15,'P','인',3,15,'nonmetal'], [16,'S','황',3,16,'nonmetal'],
-  [17,'Cl','염소',3,17,'halogen'], [18,'Ar','아르곤',3,18,'noble'],
-  [19,'K','칼륨',4,1,'alkali'], [20,'Ca','칼슘',4,2,'alkali-earth'],
-  [21,'Sc','스칸듐',4,3,'transition'], [22,'Ti','타이타늄',4,4,'transition'],
-  [23,'V','바나듐',4,5,'transition'], [24,'Cr','크로뮴',4,6,'transition'],
-  [25,'Mn','망가니즈',4,7,'transition'], [26,'Fe','철',4,8,'transition'],
-  [27,'Co','코발트',4,9,'transition'], [28,'Ni','니켈',4,10,'transition'],
-  [29,'Cu','구리',4,11,'transition'], [30,'Zn','아연',4,12,'transition'],
-  [31,'Ga','갈륨',4,13,'post-transition'], [32,'Ge','저마늄',4,14,'metalloid'],
-  [33,'As','비소',4,15,'metalloid'], [34,'Se','셀레늄',4,16,'nonmetal'],
-  [35,'Br','브로민',4,17,'halogen'], [36,'Kr','크립톤',4,18,'noble'],
-  [37,'Rb','루비듐',5,1,'alkali'], [38,'Sr','스트론튬',5,2,'alkali-earth'],
-  [39,'Y','이트륨',5,3,'transition'], [40,'Zr','지르코늄',5,4,'transition'],
-  [41,'Nb','나이오븀',5,5,'transition'], [42,'Mo','몰리브데넘',5,6,'transition'],
-  [43,'Tc','테크네튬',5,7,'transition'], [44,'Ru','루테늄',5,8,'transition'],
-  [45,'Rh','로듐',5,9,'transition'], [46,'Pd','팔라듐',5,10,'transition'],
-  [47,'Ag','은',5,11,'transition'], [48,'Cd','카드뮴',5,12,'transition'],
-  [49,'In','인듐',5,13,'post-transition'], [50,'Sn','주석',5,14,'post-transition'],
-  [51,'Sb','안티모니',5,15,'metalloid'], [52,'Te','텔루륨',5,16,'metalloid'],
-  [53,'I','아이오딘',5,17,'halogen'], [54,'Xe','제논',5,18,'noble'],
-  [55,'Cs','세슘',6,1,'alkali'], [56,'Ba','바륨',6,2,'alkali-earth'],
-  [57,'La','란타넘',8,4,'lanthanide'], [58,'Ce','세륨',8,5,'lanthanide'],
-  [59,'Pr','프라세오디뮴',8,6,'lanthanide'], [60,'Nd','네오디뮴',8,7,'lanthanide'],
-  [61,'Pm','프로메튬',8,8,'lanthanide'], [62,'Sm','사마륨',8,9,'lanthanide'],
-  [63,'Eu','유로퓸',8,10,'lanthanide'], [64,'Gd','가돌리늄',8,11,'lanthanide'],
-  [65,'Tb','터븀',8,12,'lanthanide'], [66,'Dy','디스프로슘',8,13,'lanthanide'],
-  [67,'Ho','홀뮴',8,14,'lanthanide'], [68,'Er','어븀',8,15,'lanthanide'],
-  [69,'Tm','툴륨',8,16,'lanthanide'], [70,'Yb','이터븀',8,17,'lanthanide'],
+  [1,'H','수소',1,1,'nonmetal'],[2,'He','헬륨',1,18,'noble'],
+  [3,'Li','리튬',2,1,'alkali'],[4,'Be','베릴륨',2,2,'alkali-earth'],
+  [5,'B','붕소',2,13,'metalloid'],[6,'C','탄소',2,14,'nonmetal'],
+  [7,'N','질소',2,15,'nonmetal'],[8,'O','산소',2,16,'nonmetal'],
+  [9,'F','플루오린',2,17,'halogen'],[10,'Ne','네온',2,18,'noble'],
+  [11,'Na','나트륨',3,1,'alkali'],[12,'Mg','마그네슘',3,2,'alkali-earth'],
+  [13,'Al','알루미늄',3,13,'post-transition'],[14,'Si','규소',3,14,'metalloid'],
+  [15,'P','인',3,15,'nonmetal'],[16,'S','황',3,16,'nonmetal'],
+  [17,'Cl','염소',3,17,'halogen'],[18,'Ar','아르곤',3,18,'noble'],
+  [19,'K','칼륨',4,1,'alkali'],[20,'Ca','칼슘',4,2,'alkali-earth'],
+  [21,'Sc','스칸듐',4,3,'transition'],[22,'Ti','타이타늄',4,4,'transition'],
+  [23,'V','바나듐',4,5,'transition'],[24,'Cr','크로뮴',4,6,'transition'],
+  [25,'Mn','망가니즈',4,7,'transition'],[26,'Fe','철',4,8,'transition'],
+  [27,'Co','코발트',4,9,'transition'],[28,'Ni','니켈',4,10,'transition'],
+  [29,'Cu','구리',4,11,'transition'],[30,'Zn','아연',4,12,'transition'],
+  [31,'Ga','갈륨',4,13,'post-transition'],[32,'Ge','저마늄',4,14,'metalloid'],
+  [33,'As','비소',4,15,'metalloid'],[34,'Se','셀레늄',4,16,'nonmetal'],
+  [35,'Br','브로민',4,17,'halogen'],[36,'Kr','크립톤',4,18,'noble'],
+  [37,'Rb','루비듐',5,1,'alkali'],[38,'Sr','스트론튬',5,2,'alkali-earth'],
+  [39,'Y','이트륨',5,3,'transition'],[40,'Zr','지르코늄',5,4,'transition'],
+  [41,'Nb','나이오븀',5,5,'transition'],[42,'Mo','몰리브데넘',5,6,'transition'],
+  [43,'Tc','테크네튬',5,7,'transition'],[44,'Ru','루테늄',5,8,'transition'],
+  [45,'Rh','로듐',5,9,'transition'],[46,'Pd','팔라듐',5,10,'transition'],
+  [47,'Ag','은',5,11,'transition'],[48,'Cd','카드뮴',5,12,'transition'],
+  [49,'In','인듐',5,13,'post-transition'],[50,'Sn','주석',5,14,'post-transition'],
+  [51,'Sb','안티모니',5,15,'metalloid'],[52,'Te','텔루륨',5,16,'metalloid'],
+  [53,'I','아이오딘',5,17,'halogen'],[54,'Xe','제논',5,18,'noble'],
+  [55,'Cs','세슘',6,1,'alkali'],[56,'Ba','바륨',6,2,'alkali-earth'],
+  [57,'La','란타넘',8,4,'lanthanide'],[58,'Ce','세륨',8,5,'lanthanide'],
+  [59,'Pr','프라세오디뮴',8,6,'lanthanide'],[60,'Nd','네오디뮴',8,7,'lanthanide'],
+  [61,'Pm','프로메튬',8,8,'lanthanide'],[62,'Sm','사마륨',8,9,'lanthanide'],
+  [63,'Eu','유로퓸',8,10,'lanthanide'],[64,'Gd','가돌리늄',8,11,'lanthanide'],
+  [65,'Tb','터븀',8,12,'lanthanide'],[66,'Dy','디스프로슘',8,13,'lanthanide'],
+  [67,'Ho','홀뮴',8,14,'lanthanide'],[68,'Er','어븀',8,15,'lanthanide'],
+  [69,'Tm','툴륨',8,16,'lanthanide'],[70,'Yb','이터븀',8,17,'lanthanide'],
   [71,'Lu','루테튬',8,18,'lanthanide'],
-  [72,'Hf','하프늄',6,4,'transition'], [73,'Ta','탄탈럼',6,5,'transition'],
-  [74,'W','텅스텐',6,6,'transition'], [75,'Re','레늄',6,7,'transition'],
-  [76,'Os','오스뮴',6,8,'transition'], [77,'Ir','이리듐',6,9,'transition'],
-  [78,'Pt','백금',6,10,'transition'], [79,'Au','금',6,11,'transition'],
-  [80,'Hg','수은',6,12,'transition'], [81,'Tl','탈륨',6,13,'post-transition'],
-  [82,'Pb','납',6,14,'post-transition'], [83,'Bi','비스무트',6,15,'post-transition'],
-  [84,'Po','폴로늄',6,16,'metalloid'], [85,'At','아스타틴',6,17,'halogen'],
+  [72,'Hf','하프늄',6,4,'transition'],[73,'Ta','탄탈럼',6,5,'transition'],
+  [74,'W','텅스텐',6,6,'transition'],[75,'Re','레늄',6,7,'transition'],
+  [76,'Os','오스뮴',6,8,'transition'],[77,'Ir','이리듐',6,9,'transition'],
+  [78,'Pt','백금',6,10,'transition'],[79,'Au','금',6,11,'transition'],
+  [80,'Hg','수은',6,12,'transition'],[81,'Tl','탈륨',6,13,'post-transition'],
+  [82,'Pb','납',6,14,'post-transition'],[83,'Bi','비스무트',6,15,'post-transition'],
+  [84,'Po','폴로늄',6,16,'metalloid'],[85,'At','아스타틴',6,17,'halogen'],
   [86,'Rn','라돈',6,18,'noble'],
-  [87,'Fr','프랑슘',7,1,'alkali'], [88,'Ra','라듐',7,2,'alkali-earth'],
-  [89,'Ac','악티늄',9,4,'actinide'], [90,'Th','토륨',9,5,'actinide'],
-  [91,'Pa','프로트악티늄',9,6,'actinide'], [92,'U','우라늄',9,7,'actinide'],
-  [93,'Np','넵투늄',9,8,'actinide'], [94,'Pu','플루토늄',9,9,'actinide'],
-  [95,'Am','아메리슘',9,10,'actinide'], [96,'Cm','퀴륨',9,11,'actinide'],
-  [97,'Bk','버클륨',9,12,'actinide'], [98,'Cf','캘리포늄',9,13,'actinide'],
-  [99,'Es','아인슈타이늄',9,14,'actinide'], [100,'Fm','페르뮴',9,15,'actinide'],
-  [101,'Md','멘델레븀',9,16,'actinide'], [102,'No','노벨륨',9,17,'actinide'],
+  [87,'Fr','프랑슘',7,1,'alkali'],[88,'Ra','라듐',7,2,'alkali-earth'],
+  [89,'Ac','악티늄',9,4,'actinide'],[90,'Th','토륨',9,5,'actinide'],
+  [91,'Pa','프로트악티늄',9,6,'actinide'],[92,'U','우라늄',9,7,'actinide'],
+  [93,'Np','넵투늄',9,8,'actinide'],[94,'Pu','플루토늄',9,9,'actinide'],
+  [95,'Am','아메리슘',9,10,'actinide'],[96,'Cm','퀴륨',9,11,'actinide'],
+  [97,'Bk','버클륨',9,12,'actinide'],[98,'Cf','캘리포늄',9,13,'actinide'],
+  [99,'Es','아인슈타이늄',9,14,'actinide'],[100,'Fm','페르뮴',9,15,'actinide'],
+  [101,'Md','멘델레븀',9,16,'actinide'],[102,'No','노벨륨',9,17,'actinide'],
   [103,'Lr','로렌슘',9,18,'actinide'],
-  [104,'Rf','러더포듐',7,4,'transition'], [105,'Db','더브늄',7,5,'transition'],
-  [106,'Sg','시보귬',7,6,'transition'], [107,'Bh','보륨',7,7,'transition'],
-  [108,'Hs','하슘',7,8,'transition'], [109,'Mt','마이트너륨',7,9,'transition'],
-  [110,'Ds','다름슈타튬',7,10,'transition'], [111,'Rg','뢴트게늄',7,11,'transition'],
-  [112,'Cn','코페르니슘',7,12,'transition'], [113,'Nh','니호늄',7,13,'post-transition'],
-  [114,'Fl','플레로븀',7,14,'post-transition'], [115,'Mc','모스코븀',7,15,'post-transition'],
-  [116,'Lv','리버모륨',7,16,'post-transition'], [117,'Ts','테네신',7,17,'halogen'],
+  [104,'Rf','러더포듐',7,4,'transition'],[105,'Db','더브늄',7,5,'transition'],
+  [106,'Sg','시보귬',7,6,'transition'],[107,'Bh','보륨',7,7,'transition'],
+  [108,'Hs','하슘',7,8,'transition'],[109,'Mt','마이트너륨',7,9,'transition'],
+  [110,'Ds','다름슈타튬',7,10,'transition'],[111,'Rg','뢴트게늄',7,11,'transition'],
+  [112,'Cn','코페르니슘',7,12,'transition'],[113,'Nh','니호늄',7,13,'post-transition'],
+  [114,'Fl','플레로븀',7,14,'post-transition'],[115,'Mc','모스코븀',7,15,'post-transition'],
+  [116,'Lv','리버모륨',7,16,'post-transition'],[117,'Ts','테네신',7,17,'halogen'],
   [118,'Og','오가네손',7,18,'noble'],
 ];
 
-// ── 학생 인증 ──
-let currentUser = null;
-let students = {};
+// ── URL에서 학급 파라미터 추출 ──
+const params   = new URLSearchParams(location.search);
+const urlClass = params.get('class'); // "2-1" ~ "2-10"
+
+let students = {}, currentUser = null, cardData = {}, unsubscribe = null;
+
+async function init() {
+  // 학급 파라미터 없으면 오류 화면
+  if (!urlClass) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('error-screen').style.display = 'flex';
+    return;
+  }
+
+  document.getElementById('login-cls-badge').textContent = `${urlClass}반`;
+  document.getElementById('class-badge').textContent = `${urlClass}반`;
+  document.title = `${urlClass}반 원소 주기율표`;
+
+  await loadStudents();
+
+  // 세션 복원 — 저장된 학급과 현재 URL 학급이 같아야만 복원
+  const saved = sessionStorage.getItem('user');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed.cls === urlClass) {
+      currentUser = parsed;
+      showMain();
+      return;
+    } else {
+      // 다른 반 URL로 접속하면 세션 초기화
+      sessionStorage.removeItem('user');
+    }
+  }
+}
 
 async function loadStudents() {
   const res = await fetch('./students.json');
-  students = await res.json();
+  const all  = await res.json();
+  // 현재 URL 학급 학생만 필터링
+  students = Object.fromEntries(
+    Object.entries(all).filter(([, v]) => v.cls === urlClass)
+  );
 }
 
-window.tryLogin = async function() {
-  const sid = document.getElementById('input-student-id').value.trim();
+// ── 로그인 ──
+// 학번으로 students에서 찾고, 이름 대조 후 cls가 urlClass와 일치하는지 확인
+window.tryLogin = function() {
+  const sid  = document.getElementById('input-student-id').value.trim();
   const name = document.getElementById('input-name').value.trim();
   const errEl = document.getElementById('login-error');
 
-  if (!students[sid] || students[sid].name !== name) {
+  const student = students[sid];
+
+  // 학번 없음 또는 이름 불일치
+  if (!student || student.name !== name) {
+    errEl.textContent = '학번 또는 이름이 일치하지 않습니다.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // 학번의 cls가 현재 URL 학급과 다른 경우 (다른 반 학생이 이 URL로 접속 시도)
+  if (student.cls !== urlClass) {
+    errEl.textContent = `이 페이지는 ${urlClass}반 전용입니다. 담임선생님께 올바른 URL을 확인하세요.`;
     errEl.style.display = 'block';
     return;
   }
 
   errEl.style.display = 'none';
-  currentUser = { studentId: sid, name, elements: students[sid].elements };
+  currentUser = { studentId: sid, name, cls: urlClass, elements: student.elements };
   sessionStorage.setItem('user', JSON.stringify(currentUser));
-
   showMain();
 };
 
-window.logout = function() {
-  sessionStorage.removeItem('user');
-  location.reload();
+window.logout = function() { sessionStorage.removeItem('user'); location.reload(); };
+
+// upload.html로 이동할 때도 class 파라미터 유지
+window.goUpload = function() {
+  location.href = `upload.html?class=${encodeURIComponent(urlClass)}`;
 };
 
-// ── 화면 전환 ──
+// ── 메인 화면 ──
 function showMain() {
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('main-screen').style.display = 'block';
-  document.getElementById('user-info').style.display = 'block';
-  document.getElementById('upload-btn').style.display = 'block';
-  document.getElementById('logout-btn').style.display = 'block';
+  document.getElementById('main-screen').style.display  = 'block';
+  document.getElementById('user-info').style.display    = 'block';
+  document.getElementById('upload-btn').style.display   = 'block';
+  document.getElementById('logout-btn').style.display   = 'block';
+
+  const elNames = currentUser.elements.map(n => ELEMENTS[n-1]?.[2] || n).join(', ');
   document.getElementById('user-info').innerHTML =
-    `<strong>${currentUser.name}</strong> 님 · 담당: ${currentUser.elements.map(n => ELEMENTS[n-1]?.[2] || n).join(', ')}`;
+    `<strong>${currentUser.name}</strong> · ${urlClass}반 · ${elNames}`;
+
   buildTable();
-  listenCards();
-}
 
-// ── 주기율표 렌더링 ──
-// 행 1~7 + 구분줄 + 행 8(란타넘족) + 행 9(악티늄족) = 총 9행
-// 그리드는 18열 × 9행 + 구분 2줄
-let cardData = {}; // { elementNo: { frontUrl, backUrl, studentId } }
-
-function buildTable() {
-  const table = document.getElementById('periodic-table');
-  table.innerHTML = '';
-
-  // 행 번호 목록 (8, 9는 란타넘/악티늄)
-  const rows = [1,2,3,4,5,6,7,'gap1',8,'gap2',9];
-
-  rows.forEach(row => {
-    if (typeof row === 'string') {
-      // 구분 줄
-      const gap = document.createElement('div');
-      gap.style.cssText = 'grid-column:1/-1; height:8px;';
-      table.appendChild(gap);
-      return;
-    }
-
-    for (let col = 1; col <= 18; col++) {
-      const el = ELEMENTS.find(e => e[3] === row && e[4] === col);
-      const cell = document.createElement('div');
-      cell.className = 'element-cell';
-
-      if (!el) {
-        cell.classList.add('empty');
-        // 란타넘족/악티늄족 자리 표시 (행6 col3, 행7 col3)
-        if ((row === 6 || row === 7) && col === 3) {
-          cell.classList.remove('empty');
-          cell.classList.add('no-card');
-          cell.style.background = 'var(--surface2)';
-          cell.style.opacity = '0.4';
-          cell.innerHTML = `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:var(--text-muted)">${row===6?'57-71':'89-103'}</div>`;
-        }
-      } else {
-        const [no, sym, name, , , cat] = el;
-        cell.dataset.no = no;
-        cell.classList.add('no-card', cat);
-        cell.innerHTML = `
-          <div class="cell-number">${no}</div>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;">
-            <div class="cell-symbol">${sym}</div>
-            <div class="cell-name">${name}</div>
-          </div>`;
-        cell.addEventListener('click', () => openModal(no));
-      }
-
-      table.appendChild(cell);
-    }
-  });
-}
-
-// ── Firestore 실시간 구독 ──
-function listenCards() {
-  onSnapshot(collection(db, 'elements'), (snap) => {
+  // Firestore 구독: classes/{cls}/elements
+  unsubscribe = onSnapshot(collection(db, 'classes', urlClass, 'elements'), snap => {
     cardData = {};
-    snap.forEach(doc => {
-      const d = doc.data();
-      cardData[d.elementNo] = d;
-    });
+    snap.forEach(doc => { const d = doc.data(); cardData[d.elementNo] = d; });
     updateCells();
     updateProgress();
   });
 }
 
-function updateCells() {
-  document.querySelectorAll('.element-cell[data-no]').forEach(cell => {
-    const no = parseInt(cell.dataset.no);
-    const card = cardData[no];
-    if (card && card.frontUrl) {
-      cell.classList.remove('no-card');
-      cell.classList.add('has-card');
-      // 앞면 이미지 배경으로
-      const [, sym, name, , , cat] = ELEMENTS[no-1];
-      cell.innerHTML = `
-        <div class="card-front" style="background-image:url('${card.frontUrl}')"></div>
-        <div class="card-overlay">
-          <div class="cell-number">${no}</div>
-          <div class="cell-symbol">${sym}</div>
-          <div class="cell-name">${name}</div>
-        </div>`;
+// ── 주기율표 빌드 ──
+function buildTable() {
+  const table = document.getElementById('periodic-table');
+  table.innerHTML = '';
+  [1,2,3,4,5,6,7,'gap1',8,'gap2',9].forEach(row => {
+    if (typeof row === 'string') {
+      const gap = document.createElement('div');
+      gap.style.cssText = 'grid-column:1/-1;height:8px;';
+      table.appendChild(gap); return;
+    }
+    for (let col = 1; col <= 18; col++) {
+      const el   = ELEMENTS.find(e => e[3] === row && e[4] === col);
+      const cell = document.createElement('div');
+      cell.className = 'element-cell';
+      if (!el) {
+        cell.classList.add('empty');
+        if ((row === 6 || row === 7) && col === 3) {
+          cell.classList.remove('empty'); cell.classList.add('no-card'); cell.style.opacity = '.4';
+          cell.innerHTML = `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--text-muted)">${row===6?'57-71':'89-103'}</div>`;
+        }
+      } else {
+        const [no, sym, name,,, cat] = el;
+        cell.dataset.no = no;
+        cell.classList.add('no-card', cat);
+        cell.innerHTML = `<div class="cell-number">${no}</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;"><div class="cell-symbol">${sym}</div><div class="cell-name">${name}</div></div>`;
+        cell.addEventListener('click', () => openModal(no));
+      }
+      table.appendChild(cell);
     }
   });
 }
 
+function updateCells() {
+  document.querySelectorAll('.element-cell[data-no]').forEach(cell => {
+    const no   = parseInt(cell.dataset.no);
+    const card = cardData[no];
+    const [, sym, name,,, cat] = ELEMENTS[no-1];
+    if (card?.frontUrl) {
+      cell.className = 'element-cell has-card';
+      cell.innerHTML = `<div class="card-front" style="background-image:url('${card.frontUrl}')"></div><div class="card-overlay"><div class="cell-number">${no}</div><div class="cell-symbol">${sym}</div><div class="cell-name">${name}</div></div>`;
+    } else {
+      cell.className = `element-cell no-card ${cat}`;
+      cell.innerHTML = `<div class="cell-number">${no}</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;"><div class="cell-symbol">${sym}</div><div class="cell-name">${name}</div></div>`;
+    }
+    cell.addEventListener('click', () => openModal(no));
+  });
+}
+
 function updateProgress() {
-  const total = Object.keys(students).length * 2; // 학생수 × 2원소
-  const done = Object.values(cardData).filter(c => c.frontUrl).length;
-  document.getElementById('progress-text').textContent =
-    `${done}개 원소 카드 완성 · 클릭하면 자세히 볼 수 있어요`;
+  const total = Object.keys(students).length * 2;
+  const done  = Object.values(cardData).filter(c => c.frontUrl).length;
+  const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-text').textContent  = `${done}개 원소 카드 완성 · 클릭하면 자세히 볼 수 있어요`;
   document.getElementById('progress-count').textContent = `${done} / ${total}`;
-  document.getElementById('progress-fill').style.width = `${total > 0 ? Math.round(done/total*100) : 0}%`;
+  document.getElementById('progress-fill').style.width  = `${pct}%`;
 }
 
 // ── 모달 ──
 let isFlipped = false;
-
 window.openModal = function(no) {
   const card = cardData[no];
   const [, sym, name] = ELEMENTS[no-1];
-
   isFlipped = false;
   document.getElementById('card-flipper').classList.remove('flipped');
-
   const frontEl = document.getElementById('modal-front');
-  const backEl = document.getElementById('modal-back');
-
-  if (card && card.frontUrl) {
+  const backEl  = document.getElementById('modal-back');
+  if (card?.frontUrl) {
     frontEl.innerHTML = `<img src="${card.frontUrl}" alt="${name} 앞면">`;
-    backEl.innerHTML = card.backUrl
+    backEl.innerHTML  = card.backUrl
       ? `<img src="${card.backUrl}" alt="${name} 뒷면">`
       : `<div class="no-image"><span>📋</span><p>뒷면 카드 준비 중</p></div>`;
   } else {
-    frontEl.innerHTML = `<div class="no-image" style="background:var(--surface2);position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;border-radius:20px"><span style="font-size:3rem">${sym}</span><p style="color:var(--text-muted)">${name} · 카드 준비 중</p></div>`;
-    backEl.innerHTML = `<div class="no-image" style="background:var(--surface2);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:20px"><p style="color:var(--text-muted)">뒷면 없음</p></div>`;
+    frontEl.innerHTML = `<div class="no-image" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem"><span style="font-size:3rem">${sym}</span><p style="color:var(--text-muted)">${name} · 카드 준비 중</p></div>`;
+    backEl.innerHTML  = `<div class="no-image" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><p style="color:var(--text-muted)">뒷면 없음</p></div>`;
   }
-
   document.getElementById('modal-name').textContent = `${sym} · ${name}`;
-  document.getElementById('modal-sub').textContent = `원자 번호 ${no}`;
+  document.getElementById('modal-sub').textContent  = `원자 번호 ${no}`;
   document.getElementById('modal-overlay').classList.add('active');
 };
-
-window.flipCard = function() {
-  isFlipped = !isFlipped;
-  document.getElementById('card-flipper').classList.toggle('flipped', isFlipped);
-};
-
-window.closeModal = function(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModalBtn();
-};
-
-window.closeModalBtn = function() {
-  document.getElementById('modal-overlay').classList.remove('active');
-  isFlipped = false;
-  document.getElementById('card-flipper').classList.remove('flipped');
-};
-
-// ESC 키로 모달 닫기
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModalBtn();
-});
-
-// ── 초기화 ──
-async function init() {
-  await loadStudents();
-  const saved = sessionStorage.getItem('user');
-  if (saved) {
-    currentUser = JSON.parse(saved);
-    showMain();
-  }
-}
+window.flipCard    = () => { isFlipped = !isFlipped; document.getElementById('card-flipper').classList.toggle('flipped', isFlipped); };
+window.closeModal  = e  => { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); };
+window.closeModalBtn = () => { document.getElementById('modal-overlay').classList.remove('active'); isFlipped = false; document.getElementById('card-flipper').classList.remove('flipped'); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
 
 init();
 </script>
