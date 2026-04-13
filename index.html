@@ -414,7 +414,7 @@ function buildTable() {
         cell.dataset.no = no;
         cell.classList.add('no-card', cat);
         cell.innerHTML = `<div class="cell-number">${no}</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;"><div class="cell-symbol">${sym}</div><div class="cell-name">${name}</div></div>`;
-        cell.addEventListener('click', () => openModal(no));
+        cell.addEventListener('click', () => openModal(no, cell));
       }
       table.appendChild(cell);
     }
@@ -433,7 +433,7 @@ function updateCells() {
       cell.className = `element-cell no-card ${cat}`;
       cell.innerHTML = `<div class="cell-number">${no}</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;"><div class="cell-symbol">${sym}</div><div class="cell-name">${name}</div></div>`;
     }
-    cell.addEventListener('click', () => openModal(no));
+    cell.addEventListener('click', () => openModal(no, cell));
   });
 }
 
@@ -448,29 +448,101 @@ function updateProgress() {
 
 // ── 모달 ──
 let isFlipped = false;
-window.openModal = function(no) {
-  const card = cardData[no];
-  const [, sym, name] = ELEMENTS[no-1];
-  isFlipped = false;
-  document.getElementById('card-flipper').classList.remove('flipped');
+let isAnimating = false;
+
+window.openModal = function(no, cellEl) {
+  if (isAnimating) return;
+  const card    = cardData[no];
+  const [,sym,name] = ELEMENTS[no-1];
+  const modalCard   = document.getElementById('modal-card');
+  const overlay     = document.getElementById('modal-overlay');
+  const flipper     = document.getElementById('card-flipper');
+
+  // 앞/뒷면 내용 주입
   const frontEl = document.getElementById('modal-front');
   const backEl  = document.getElementById('modal-back');
   if (card?.frontUrl) {
     frontEl.innerHTML = `<img src="${card.frontUrl}" alt="${name} 앞면">`;
     backEl.innerHTML  = card.backUrl
       ? `<img src="${card.backUrl}" alt="${name} 뒷면">`
-      : `<div class="no-image"><span>📋</span><p>뒷면 카드 준비 중</p></div>`;
+      : `<div class="no-image" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem"><span>📋</span><p>뒷면 카드 준비 중</p></div>`;
   } else {
-    frontEl.innerHTML = `<div class="no-image" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem"><span style="font-size:3rem">${sym}</span><p style="color:var(--text-muted)">${name} · 카드 준비 중</p></div>`;
+    frontEl.innerHTML = `<div class="no-image" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem"><span style="font-family:'Space Mono',monospace;font-size:4rem;font-weight:700;color:var(--text-muted);opacity:.4">${sym}</span><p style="color:var(--text-muted)">${name} · 카드 준비 중</p></div>`;
     backEl.innerHTML  = `<div class="no-image" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><p style="color:var(--text-muted)">뒷면 없음</p></div>`;
   }
   document.getElementById('modal-name').textContent = `${sym} · ${name}`;
   document.getElementById('modal-sub').textContent  = `원자 번호 ${no}`;
-  document.getElementById('modal-overlay').classList.add('active');
+
+  // 플리퍼 초기화
+  isFlipped = false;
+  flipper.classList.remove('flipped');
+  flipper.style.transition = 'none';
+  setTimeout(() => { flipper.style.transition = ''; }, 50);
+
+  // 셀의 화면 위치 계산
+  const cellRect  = cellEl.getBoundingClientRect();
+  const cellCx    = cellRect.left + cellRect.width  / 2;
+  const cellCy    = cellRect.top  + cellRect.height / 2;
+  const cellSize  = cellRect.width;
+
+  // 목표 크기 (중앙 최종 크기)
+  const targetW = Math.min(480, window.innerWidth * 0.88);
+  const targetH = targetW; // 정사각형 카드
+  const targetL = (window.innerWidth  - targetW) / 2;
+  const targetT = (window.innerHeight - targetH) / 2 - 30;
+
+  // 시작: 셀 위치·크기에서 시작
+  modalCard.style.transition = 'none';
+  modalCard.style.width   = `${cellSize}px`;
+  modalCard.style.height  = `${cellSize}px`;
+  modalCard.style.left    = `${cellCx - cellSize/2}px`;
+  modalCard.style.top     = `${cellCy - cellSize/2}px`;
+  modalCard.style.opacity = '0';
+  modalCard.style.display = 'block';
+
+  // 오버레이 표시
+  overlay.style.display = 'block';
+
+  isAnimating = true;
+
+  // 한 프레임 뒤 애니메이션 시작
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      modalCard.style.transition = 'top .45s cubic-bezier(.4,0,.2,1),left .45s cubic-bezier(.4,0,.2,1),width .45s cubic-bezier(.4,0,.2,1),height .45s cubic-bezier(.4,0,.2,1),opacity .3s ease';
+      modalCard.style.width   = `${targetW}px`;
+      modalCard.style.height  = `${targetH + 80}px`; // 컨트롤 영역 포함
+      modalCard.style.left    = `${targetL}px`;
+      modalCard.style.top     = `${targetT}px`;
+      modalCard.style.opacity = '1';
+      overlay.classList.add('active');
+      modalCard.classList.add('active');
+      setTimeout(() => { isAnimating = false; }, 500);
+    });
+  });
 };
-window.flipCard    = () => { isFlipped = !isFlipped; document.getElementById('card-flipper').classList.toggle('flipped', isFlipped); };
-window.closeModal  = e  => { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); };
-window.closeModalBtn = () => { document.getElementById('modal-overlay').classList.remove('active'); isFlipped = false; document.getElementById('card-flipper').classList.remove('flipped'); };
+
+window.flipCard = () => {
+  isFlipped = !isFlipped;
+  document.getElementById('card-flipper').classList.toggle('flipped', isFlipped);
+};
+
+window.closeModalBtn = () => {
+  if (isAnimating) return;
+  const modalCard = document.getElementById('modal-card');
+  const overlay   = document.getElementById('modal-overlay');
+  isAnimating = true;
+  modalCard.style.opacity = '0';
+  overlay.classList.remove('active');
+  modalCard.classList.remove('active');
+  setTimeout(() => {
+    modalCard.style.display = 'none';
+    overlay.style.display   = 'none';
+    isFlipped = false;
+    document.getElementById('card-flipper').classList.remove('flipped');
+    isAnimating = false;
+  }, 380);
+};
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
 
 init();
