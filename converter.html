@@ -3,44 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>students.json 변환 도구</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<title>원소 배정 도구</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;--accent:#4f8ef7;--text:#e8eaf0;--text-muted:#7a8599;--success:#34d399;--danger:#f87171;--warning:#fbbf24;}
+  :root{
+    --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;
+    --accent:#4f8ef7;--accent2:#7c5cfc;--text:#e8eaf0;--text-muted:#7a8599;
+    --success:#34d399;--danger:#f87171;--warning:#fbbf24;
+  }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem 4rem;}
-  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 10%,rgba(79,142,247,.08) 0%,transparent 60%);pointer-events:none;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 10%,rgba(79,142,247,.08) 0%,transparent 60%);pointer-events:none;z-index:0;}
 
-  .container{max-width:780px;margin:0 auto;position:relative;z-index:1;}
+  /* 헤더 */
+  header{position:sticky;top:0;z-index:50;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(10,14,26,.9);backdrop-filter:blur(12px);gap:1rem;flex-wrap:wrap;}
+  .logo{font-family:'Space Mono',monospace;font-size:.95rem;color:var(--accent);}
+  .logo span{color:var(--text-muted);}
+  .save-status{font-size:.78rem;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;}
+  .save-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);flex-shrink:0;}
+  .save-dot.saved{background:var(--success);}
+  .save-dot.saving{background:var(--warning);animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  .page-header{text-align:center;margin-bottom:2.5rem;}
-  .page-header .icon{font-size:2.5rem;display:block;margin-bottom:.75rem;}
-  .page-header h1{font-size:1.5rem;font-weight:700;margin-bottom:.4rem;}
-  .page-header p{font-size:.9rem;color:var(--text-muted);line-height:1.6;}
+  /* 탭 */
+  .tab-bar{position:relative;z-index:1;display:flex;border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto;}
+  .tab{font-family:'Noto Sans KR',sans-serif;font-size:.85rem;padding:.85rem 1.4rem;border:none;background:transparent;color:var(--text-muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500;}
 
-  /* 단계 표시 */
-  .steps{display:flex;gap:0;margin-bottom:2rem;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
-  .step{flex:1;padding:.75rem .5rem;text-align:center;font-size:.75rem;color:var(--text-muted);background:var(--surface2);border-right:1px solid var(--border);transition:all .3s;}
-  .step:last-child{border-right:none;}
-  .step.active{background:rgba(79,142,247,.15);color:var(--accent);font-weight:500;}
-  .step.done{background:rgba(52,211,153,.1);color:var(--success);}
-  .step .step-num{display:block;font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;margin-bottom:.2rem;}
+  /* 컨텐츠 */
+  .tab-content{display:none;position:relative;z-index:1;padding:2rem 1.5rem 4rem;max-width:900px;margin:0 auto;}
+  .tab-content.active{display:block;}
 
   /* 카드 */
   .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.25rem;}
-  .card-title{font-size:1rem;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
-  .card-title .tag{font-size:.72rem;background:rgba(79,142,247,.15);color:var(--accent);border-radius:4px;padding:.15rem .5rem;}
+  .card-title{font-size:1rem;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+  .tag{font-size:.7rem;background:rgba(79,142,247,.15);color:var(--accent);border-radius:4px;padding:.15rem .5rem;}
+  .tag-success{background:rgba(52,211,153,.15);color:var(--success);}
+  .tag-warn{background:rgba(251,191,36,.15);color:var(--warning);}
 
   /* 업로드 박스 */
   .upload-box{border:2px dashed var(--border);border-radius:12px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
   .upload-box:hover,.upload-box.dragover{border-color:var(--accent);background:rgba(79,142,247,.05);}
   .upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-  .upload-box .up-icon{font-size:2rem;display:block;margin-bottom:.75rem;}
-  .upload-box p{font-size:.9rem;color:var(--text-muted);}
-  .upload-box .up-name{font-size:.85rem;color:var(--accent);margin-top:.5rem;font-weight:500;}
+  .upload-icon{font-size:2rem;display:block;margin-bottom:.75rem;}
+  .upload-box p{font-size:.88rem;color:var(--text-muted);}
+  .up-name{font-size:.85rem;color:var(--accent);margin-top:.5rem;font-weight:500;}
 
-  /* 미리보기 테이블 */
+  /* 테이블 */
   .table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
   table{width:100%;border-collapse:collapse;font-size:.82rem;}
   thead tr{background:var(--surface2);}
@@ -49,160 +60,205 @@
   tr:last-child td{border-bottom:none;}
   tr:hover td{background:rgba(79,142,247,.04);}
   .td-elem{font-family:'Space Mono',monospace;color:var(--accent);font-weight:700;}
-  .td-err{color:var(--danger);}
+  .td-name{text-align:left;font-weight:500;}
 
-  /* 통계 배지 */
+  /* 반 선택 그리드 */
+  .cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:1.25rem;}
+  .cls-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;cursor:pointer;transition:all .2s;text-align:center;}
+  .cls-card:hover{border-color:var(--accent);}
+  .cls-card.active{border-color:var(--accent);background:rgba(79,142,247,.1);}
+  .cls-card .cls-name{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.2rem;}
+  .cls-card .cls-count{font-size:.75rem;color:var(--text-muted);}
+  .cls-card .cls-badge{font-size:.65rem;margin-top:.3rem;}
+
+  /* 통계 */
   .stats{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;}
   .stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.5rem .9rem;font-size:.8rem;}
   .stat span{color:var(--accent);font-weight:700;font-family:'Space Mono',monospace;}
 
-  /* 오류 목록 */
-  .errors{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:1rem;margin-bottom:1rem;}
-  .errors h4{font-size:.85rem;color:var(--danger);margin-bottom:.5rem;}
-  .errors ul{list-style:none;font-size:.8rem;color:var(--danger);line-height:2;}
-
   /* 버튼 */
-  .btn{font-family:'Noto Sans KR',sans-serif;font-size:.9rem;padding:.65rem 1.4rem;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s;}
+  .btn{font-family:'Noto Sans KR',sans-serif;font-size:.88rem;padding:.6rem 1.3rem;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s;white-space:nowrap;}
   .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
   .btn-primary:hover{background:#3a7de8;color:#fff;border-color:#3a7de8;}
-  .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
   .btn-success{background:var(--success);border-color:var(--success);color:#052e16;font-weight:700;}
-  .btn-success:hover{background:#22c55e;border-color:#22c55e;color:#052e16;}
-  .btn-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;}
+  .btn-success:hover{background:#22c55e;border-color:#22c55e;}
+  .btn-danger{border-color:rgba(248,113,113,.4);color:var(--danger);}
+  .btn-danger:hover{background:rgba(248,113,113,.1);border-color:var(--danger);}
+  .btn-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem;align-items:center;}
 
-  /* JSON 미리보기 */
-  .json-preview{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'Space Mono',monospace;font-size:.75rem;color:var(--text-muted);max-height:240px;overflow-y:auto;line-height:1.7;white-space:pre-wrap;word-break:break-all;}
-
-  /* 상태 메시지 */
-  .msg{border-radius:10px;padding:.75rem 1rem;font-size:.88rem;margin-bottom:1rem;}
+  /* 메시지 */
+  .msg{border-radius:10px;padding:.75rem 1rem;font-size:.88rem;margin-bottom:1rem;line-height:1.6;}
   .msg.success{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--success);}
   .msg.error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--danger);}
-  .msg.warn{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);}
+  .msg.info{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);color:var(--accent);}
+
+  /* 원소 배지 */
+  .elem-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;background:rgba(79,142,247,.15);color:var(--accent);border:1px solid rgba(79,142,247,.3);border-radius:6px;padding:.15rem .5rem;margin:1px;}
+
+  /* 저장시간 */
+  .saved-time{font-size:.75rem;color:var(--text-muted);margin-top:.5rem;}
+  .saved-time strong{color:var(--success);}
+
+  /* 로딩 */
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.3rem;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 
   .hidden{display:none;}
 
-  /* 다운로드 완료 */
-  .done-card{text-align:center;padding:2rem;}
-  .done-card .done-icon{font-size:3rem;display:block;margin-bottom:1rem;}
-  .done-card h3{font-size:1.2rem;font-weight:700;margin-bottom:.5rem;}
-  .done-card p{font-size:.88rem;color:var(--text-muted);line-height:1.7;}
+  /* 학생 조회 탭 */
+  .search-box{display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+  .search-box input,.search-box select{padding:.65rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;flex:1;min-width:120px;}
+  .search-box input:focus,.search-box select:focus{border-color:var(--accent);}
+
+  .result-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;}
+  .result-card .res-name{font-size:1.3rem;font-weight:700;margin-bottom:.5rem;}
+  .result-card .res-cls{font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;}
+  .result-card .res-elems{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+  .res-elem{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);border-radius:12px;padding:.75rem 1.5rem;text-align:center;}
+  .res-elem .elem-no{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--accent);}
+  .res-elem .elem-label{font-size:.75rem;color:var(--text-muted);margin-top:.2rem;}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <div class="page-header">
-    <span class="icon">⚗️</span>
-    <h1>students.json 변환 도구</h1>
-    <p>나이스 학생 명렬 엑셀에 원소를 배정한 뒤 업로드하면<br>웹앱용 <code style="color:var(--accent)">students.json</code> 파일을 자동으로 만들어 드립니다.</p>
+<header>
+  <div class="logo">⚗️ 원소<span>배정 도구</span></div>
+  <div class="save-status">
+    <div class="save-dot" id="save-dot"></div>
+    <span id="save-text">저장 정보 없음</span>
   </div>
+</header>
 
-  <div class="steps">
-    <div class="step active" id="step1"><span class="step-num">①</span>엑셀 업로드</div>
-    <div class="step" id="step2"><span class="step-num">②</span>데이터 확인</div>
-    <div class="step" id="step3"><span class="step-num">③</span>JSON 다운로드</div>
-  </div>
-
-  <!-- 1단계: 업로드 -->
-  <div id="section-upload">
-    <div class="card">
-      <div class="card-title">📂 엑셀 파일 업로드 <span class="tag">STEP 1</span></div>
-      <div class="upload-box" id="upload-box">
-        <input type="file" accept=".xlsx,.xls" id="file-input" onchange="handleFile(event)">
-        <span class="up-icon">📊</span>
-        <p>엑셀 파일을 클릭하거나 드래그하여 올려주세요</p>
-        <p style="font-size:.78rem;margin-top:.4rem;color:var(--text-muted)">.xlsx / .xls 지원</p>
-        <p class="up-name" id="file-name"></p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📋 엑셀 형식 안내</div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>학년</th><th>반</th><th>번호</th><th>이름</th><th>성별</th><th style="color:var(--accent)">원소1</th><th style="color:var(--accent)">원소2</th></tr></thead>
-          <tbody>
-            <tr><td>2</td><td>1</td><td>1</td><td>김민준</td><td>남</td><td class="td-elem">1</td><td class="td-elem">2</td></tr>
-            <tr><td>2</td><td>1</td><td>2</td><td>이서연</td><td>여</td><td class="td-elem">3</td><td class="td-elem">4</td></tr>
-            <tr><td>2</td><td>2</td><td>1</td><td>최수아</td><td>여</td><td class="td-elem">1</td><td class="td-elem">2</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p style="font-size:.78rem;color:var(--text-muted);margin-top:.75rem">
-        · 1행은 헤더(학년/반/번호/이름/성별/원소1/원소2)여야 합니다<br>
-        · 원소1, 원소2는 1~118 사이의 숫자로 입력해 주세요<br>
-        · 같은 반 안에서 동일한 원소 번호가 중복되면 오류로 표시됩니다
-      </p>
-    </div>
-  </div>
-
-  <!-- 2단계: 미리보기 + 오류 -->
-  <div id="section-preview" class="hidden">
-    <div class="card">
-      <div class="card-title">🔍 데이터 확인 <span class="tag">STEP 2</span></div>
-
-      <div class="stats" id="stats"></div>
-      <div id="error-list"></div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>반</th><th>번호</th><th>이름</th><th>원소1</th><th>원소2</th><th>상태</th></tr>
-          </thead>
-          <tbody id="preview-body"></tbody>
-        </table>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn" onclick="reset()">← 다시 올리기</button>
-        <button class="btn-primary btn" id="btn-generate" onclick="generateJSON()">JSON 생성하기 →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3단계: 다운로드 -->
-  <div id="section-download" class="hidden">
-    <div class="card">
-      <div class="card-title">✅ 완료 <span class="tag">STEP 3</span></div>
-      <div class="done-card">
-        <span class="done-icon">🎉</span>
-        <h3>students.json 생성 완료!</h3>
-        <p id="done-summary" style="margin-bottom:1.5rem;"></p>
-        <div class="btn-row" style="justify-content:center">
-          <button class="btn-success btn" onclick="downloadJSON()">💾 students.json 다운로드</button>
-          <button class="btn" onclick="reset()">처음으로</button>
-        </div>
-      </div>
-      <div style="margin-top:1.25rem">
-        <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">JSON 미리보기 (앞부분)</p>
-        <div class="json-preview" id="json-preview"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📌 다음 단계</div>
-      <p style="font-size:.88rem;color:var(--text-muted);line-height:2">
-        1. 다운로드한 <code style="color:var(--accent)">students.json</code>을 GitHub 레포 루트에 업로드<br>
-        2. 기존 파일을 덮어쓰기 하면 즉시 반영됩니다<br>
-        3. 배포된 URL에서 학생 로그인이 정상 작동하는지 테스트해 보세요
-      </p>
-    </div>
-  </div>
-
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('assign')">📊 원소 배정</button>
+  <button class="tab" onclick="switchTab('view')">🔍 학생 조회</button>
+  <button class="tab" onclick="switchTab('download')">💾 JSON 다운로드</button>
 </div>
 
-<script>
-let parsedData = [];
-let jsonResult = {};
+<!-- ── 탭 1: 원소 배정 ── -->
+<div class="tab-content active" id="tab-assign">
 
-// 드래그앤드롭
-const box = document.getElementById('upload-box');
-box.addEventListener('dragover', e=>{ e.preventDefault(); box.classList.add('dragover'); });
-box.addEventListener('dragleave', ()=>box.classList.remove('dragover'));
-box.addEventListener('drop', e=>{ e.preventDefault(); box.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) processFile(f); });
+  <div class="card">
+    <div class="card-title">📂 엑셀 파일 업로드</div>
+    <div class="upload-box" id="upload-box">
+      <input type="file" accept=".xlsx,.xls" id="file-input" onchange="handleFile(event)">
+      <span class="upload-icon">📊</span>
+      <p>나이스 명렬표 엑셀을 올려주세요</p>
+      <p style="font-size:.75rem;margin-top:.3rem;color:var(--text-muted)">열 순서: 학년 / 반 / 번호 / 이름 / 성별 · .xlsx .xls 지원</p>
+      <p class="up-name" id="file-name"></p>
+    </div>
+  </div>
 
-function handleFile(e) { const f=e.target.files[0]; if(f) processFile(f); }
+  <div id="assign-section" class="hidden">
+
+    <div class="card">
+      <div class="card-title">📋 업로드 결과 <span class="tag" id="total-tag"></span></div>
+      <div class="stats" id="upload-stats"></div>
+      <div id="upload-msg"></div>
+
+      <!-- 반별 카드 -->
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem">반을 선택하면 해당 반 배정 결과를 확인할 수 있습니다.</p>
+      <div class="cls-grid" id="cls-grid"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-assign-all" onclick="assignAll()">🎲 전체 반 원소 배정</button>
+        <button class="btn btn-danger" id="btn-reset" onclick="resetAssign()">↺ 배정 초기화</button>
+      </div>
+      <div class="saved-time" id="saved-time"></div>
+    </div>
+
+    <!-- 반별 상세 테이블 -->
+    <div class="card hidden" id="cls-detail-card">
+      <div class="card-title" id="cls-detail-title"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>번호</th><th>이름</th><th>원소1</th><th>원소2</th></tr></thead>
+          <tbody id="cls-detail-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── 탭 2: 학생 조회 ── -->
+<div class="tab-content" id="tab-view">
+  <div class="card">
+    <div class="card-title">🔍 내 원소 확인</div>
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.7">
+      반과 이름을 선택하면 담당 원소를 확인할 수 있습니다.
+    </p>
+    <div class="search-box">
+      <select id="search-cls" onchange="onClsChange()">
+        <option value="">반 선택</option>
+      </select>
+      <select id="search-name" onchange="onNameChange()">
+        <option value="">이름 선택</option>
+      </select>
+    </div>
+    <div id="search-result"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 반별 전체 목록</div>
+    <div class="search-box" style="margin-bottom:1rem">
+      <select id="list-cls" onchange="renderClassList()">
+        <option value="">반 선택</option>
+      </select>
+    </div>
+    <div id="class-list-table"></div>
+  </div>
+</div>
+
+<!-- ── 탭 3: JSON 다운로드 ── -->
+<div class="tab-content" id="tab-download">
+  <div class="card">
+    <div class="card-title">💾 students.json 다운로드</div>
+    <div id="dl-status"></div>
+    <div class="btn-row">
+      <button class="btn btn-success" id="btn-download" onclick="downloadJSON()" disabled>💾 students.json 다운로드</button>
+    </div>
+    <div style="margin-top:1.25rem">
+      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">JSON 미리보기</p>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'Space Mono',monospace;font-size:.72rem;color:var(--text-muted);max-height:260px;overflow-y:auto;line-height:1.8;white-space:pre-wrap;word-break:break-all" id="json-preview"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 다음 단계</div>
+    <p style="font-size:.88rem;color:var(--text-muted);line-height:2">
+      1. 다운로드한 <code style="color:var(--accent)">students.json</code>을 GitHub 레포 루트에 업로드<br>
+      2. 기존 파일을 덮어쓰기하면 즉시 반영됩니다<br>
+      3. 배포 URL에서 학생 로그인이 정상 작동하는지 테스트하세요
+    </p>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import firebaseConfig from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── 전역 상태 ──
+let allStudents  = [];   // 엑셀에서 읽은 전체 학생
+let assignments  = {};   // { studentId: { ...student, elem1, elem2 } }
+let classList    = [];   // 반 목록 ["2-1", "2-2", ...]
+let currentCls   = null;
+let isAssigned   = false;
+
+// ── 파일 업로드 ──
+const uploadBox = document.getElementById('upload-box');
+uploadBox.addEventListener('dragover', e=>{ e.preventDefault(); uploadBox.classList.add('dragover'); });
+uploadBox.addEventListener('dragleave', ()=>uploadBox.classList.remove('dragover'));
+uploadBox.addEventListener('drop', e=>{ e.preventDefault(); uploadBox.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) processFile(f); });
+
+window.handleFile = function(e) { const f=e.target.files[0]; if(f) processFile(f); };
 
 function processFile(file) {
   document.getElementById('file-name').textContent = file.name;
@@ -212,166 +268,384 @@ function processFile(file) {
       const wb   = XLSX.read(e.target.result, { type:'binary' });
       const ws   = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      const hdr  = rows[0].map(h => String(h).trim());
 
-      // 헤더 검증
-      const header = rows[0].map(h => String(h).trim());
-      const required = ['학년','반','번호','이름','성별','원소1','원소2'];
-      const missing = required.filter(r => !header.includes(r));
-      if (missing.length > 0) {
-        alert(`헤더에 다음 열이 없습니다: ${missing.join(', ')}\n1행에 정확히 입력되어 있는지 확인해 주세요.`);
-        return;
-      }
+      const need = ['학년','반','번호','이름'];
+      const miss = need.filter(k => !hdr.includes(k));
+      if (miss.length) { alert(`헤더에 없는 열: ${miss.join(', ')}`); return; }
 
       const idx = {};
-      required.forEach(k => idx[k] = header.indexOf(k));
+      hdr.forEach((h,i) => idx[h] = i);
 
-      parsedData = rows.slice(1)
-        .filter(r => r[idx['이름']] && String(r[idx['이름']]).trim())
-        .map((r, i) => ({
-          rowNum:  i + 2,
-          grade:   String(r[idx['학년']]).trim(),
-          cls:     String(r[idx['반']]).trim(),
-          num:     String(r[idx['번호']]).trim(),
-          name:    String(r[idx['이름']]).trim(),
-          gender:  String(r[idx['성별']]).trim(),
-          elem1:   parseInt(r[idx['원소1']]),
-          elem2:   parseInt(r[idx['원소2']]),
+      allStudents = rows.slice(1)
+        .filter(r => String(r[idx['이름']]||'').trim())
+        .map(r => ({
+          grade: String(r[idx['학년']]||'2').trim(),
+          cls:   String(r[idx['반']]||'').trim(),
+          num:   parseInt(r[idx['번호']]) || 0,
+          name:  String(r[idx['이름']]||'').trim(),
         }));
 
-      showPreview();
-    } catch(err) {
-      alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
-    }
+      classList = [...new Set(allStudents.map(s=>`${s.grade}-${s.cls}`))].sort((a,b)=>{
+        const [,an]=a.split('-'), [,bn]=b.split('-'); return parseInt(an)-parseInt(bn);
+      });
+
+      buildAssignments();
+      renderUploadResult();
+      document.getElementById('assign-section').classList.remove('hidden');
+
+      // Firebase에서 기존 저장 데이터 불러오기
+      loadFromFirebase();
+    } catch(err) { alert('파일 읽기 오류: ' + err.message); }
   };
   reader.readAsBinaryString(file);
 }
 
-function showPreview() {
-  setStep(2);
-  document.getElementById('section-upload').classList.add('hidden');
-  document.getElementById('section-preview').classList.remove('hidden');
-
-  // 통계
-  const classes = [...new Set(parsedData.map(r=>r.cls))].sort((a,b)=>parseInt(a)-parseInt(b));
-  const statsEl = document.getElementById('stats');
-  statsEl.innerHTML = `
-    <div class="stat">전체 학생 <span>${parsedData.length}명</span></div>
-    <div class="stat">학급 수 <span>${classes.length}개 반</span></div>
-    <div class="stat">원소 카드 <span>${parsedData.length * 2}장</span></div>`;
-
-  // 오류 검사
-  const errors = [];
-  const clsElemMap = {};
-
-  parsedData.forEach(r => {
-    const key = `2-${r.cls}`;
-    if (!clsElemMap[key]) clsElemMap[key] = {};
-
-    // 원소 번호 유효성
-    if (isNaN(r.elem1) || r.elem1 < 1 || r.elem1 > 118)
-      errors.push(`${r.rowNum}행 (${r.name}): 원소1 값이 유효하지 않습니다 (${r.elem1})`);
-    if (isNaN(r.elem2) || r.elem2 < 1 || r.elem2 > 118)
-      errors.push(`${r.rowNum}행 (${r.name}): 원소2 값이 유효하지 않습니다 (${r.elem2})`);
-
-    // 반 내 중복 검사
-    if (clsElemMap[key][r.elem1])
-      errors.push(`${r.rowNum}행 (${r.name}): ${key}반에서 원소 ${r.elem1}번이 중복됩니다`);
-    else clsElemMap[key][r.elem1] = r.name;
-
-    if (clsElemMap[key][r.elem2])
-      errors.push(`${r.rowNum}행 (${r.name}): ${key}반에서 원소 ${r.elem2}번이 중복됩니다`);
-    else clsElemMap[key][r.elem2] = r.name;
+function buildAssignments() {
+  assignments = {};
+  allStudents.forEach(s => {
+    const sid = makeStudentId(s);
+    assignments[sid] = { ...s, clsKey: `${s.grade}-${s.cls}`, elem1: null, elem2: null };
   });
+}
 
-  const errEl = document.getElementById('error-list');
-  if (errors.length > 0) {
-    errEl.innerHTML = `<div class="errors"><h4>⚠️ 오류 ${errors.length}건 — 수정 후 다시 업로드하세요</h4><ul>${errors.map(e=>`<li>· ${e}</li>`).join('')}</ul></div>`;
-    document.getElementById('btn-generate').disabled = true;
-  } else {
-    errEl.innerHTML = `<div class="msg success">✓ 오류 없음 · JSON을 생성할 수 있습니다</div>`;
-    document.getElementById('btn-generate').disabled = false;
+function makeStudentId(s) {
+  return `${s.grade}${String(s.cls).padStart(2,'0')}${String(s.num).padStart(2,'0')}`;
+}
+
+// ── 업로드 결과 렌더링 ──
+function renderUploadResult() {
+  document.getElementById('total-tag').textContent = `총 ${allStudents.length}명`;
+  document.getElementById('upload-stats').innerHTML = classList.map(cls => {
+    const cnt = allStudents.filter(s=>`${s.grade}-${s.cls}`===cls).length;
+    return `<div class="stat">${cls}반 <span>${cnt}명</span></div>`;
+  }).join('');
+
+  const grid = document.getElementById('cls-grid');
+  grid.innerHTML = classList.map(cls => {
+    const cnt = allStudents.filter(s=>`${s.grade}-${s.cls}`===cls).length;
+    return `<div class="cls-card" id="clscard-${cls.replace('-','_')}" onclick="showClsDetail('${cls}')">
+      <div class="cls-name">${cls}반</div>
+      <div class="cls-count">${cnt}명 · 원소 1~${cnt*2}번</div>
+      <div class="cls-badge" id="badge-${cls.replace('-','_')}">⬜ 미배정</div>
+    </div>`;
+  }).join('');
+
+  // 조회 탭 셀렉트 채우기
+  ['search-cls','list-cls'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">반 선택</option>' +
+      classList.map(c=>`<option value="${c}">${c}반</option>`).join('');
+  });
+}
+
+// ── 전체 배정 ──
+window.assignAll = function() {
+  if (!allStudents.length) return;
+  const confirmed = confirm(`전체 ${classList.length}개 반 원소를 새로 랜덤 배정합니다.\n기존 배정이 초기화됩니다. 계속할까요?`);
+  if (!confirmed) return;
+
+  classList.forEach(cls => assignClass(cls));
+  isAssigned = true;
+  updateBadges();
+  saveToFirebase();
+  if (currentCls) showClsDetail(currentCls);
+  updateDownloadTab();
+};
+
+function assignClass(cls) {
+  const students = allStudents
+    .filter(s => `${s.grade}-${s.cls}` === cls)
+    .sort((a,b) => a.num - b.num);
+  const maxElem = students.length * 2;
+  const pool    = shuffle(Array.from({ length: maxElem }, (_,i) => i+1));
+
+  students.forEach((s, i) => {
+    const sid = makeStudentId(s);
+    const a   = pool[i*2], b = pool[i*2+1];
+    assignments[sid].elem1 = Math.min(a,b);
+    assignments[sid].elem2 = Math.max(a,b);
+  });
+}
+
+function shuffle(arr) {
+  for (let i=arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+window.resetAssign = function() {
+  if (!confirm('배정을 초기화하시겠습니까?')) return;
+  Object.values(assignments).forEach(s => { s.elem1=null; s.elem2=null; });
+  isAssigned = false;
+  updateBadges();
+  document.getElementById('cls-detail-card').classList.add('hidden');
+  currentCls = null;
+  updateDownloadTab();
+  setSaveStatus('none');
+};
+
+// ── 반 상세 보기 ──
+window.showClsDetail = function(cls) {
+  currentCls = cls;
+  document.querySelectorAll('.cls-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById(`clscard-${cls.replace('-','_')}`)?.classList.add('active');
+
+  const students = Object.values(assignments)
+    .filter(s => s.clsKey === cls)
+    .sort((a,b) => a.num - b.num);
+
+  document.getElementById('cls-detail-title').innerHTML =
+    `${cls}반 배정 현황 <span class="tag">원소 1~${students.length*2}번</span>`;
+
+  document.getElementById('cls-detail-body').innerHTML = students.map(s => `
+    <tr>
+      <td>${s.num}</td>
+      <td class="td-name">${s.name}</td>
+      <td class="td-elem">${s.elem1 !== null ? s.elem1 : '—'}</td>
+      <td class="td-elem">${s.elem2 !== null ? s.elem2 : '—'}</td>
+    </tr>`).join('');
+
+  document.getElementById('cls-detail-card').classList.remove('hidden');
+};
+
+function updateBadges() {
+  classList.forEach(cls => {
+    const el    = document.getElementById(`badge-${cls.replace('-','_')}`);
+    const done  = Object.values(assignments).filter(s=>s.clsKey===cls && s.elem1!==null).length;
+    const total = allStudents.filter(s=>`${s.grade}-${s.cls}`===cls).length;
+    if (el) el.textContent = done===total ? '✅ 배정 완료' : '⬜ 미배정';
+  });
+}
+
+// ── Firebase 저장/불러오기 ──
+async function saveToFirebase() {
+  setSaveStatus('saving');
+  try {
+    const payload = {
+      assignments: assignments,
+      classList,
+      savedAt: new Date().toISOString(),
+      totalStudents: allStudents.length,
+    };
+    await setDoc(doc(db,'converter','assignments'), payload);
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    setSaveStatus('saved', timeStr);
+    document.getElementById('saved-time').innerHTML = `<strong>마지막 저장:</strong> ${timeStr}`;
+  } catch(err) {
+    setSaveStatus('none');
+    console.error('Firebase 저장 오류:', err);
+  }
+}
+
+async function loadFromFirebase() {
+  setSaveStatus('saving');
+  try {
+    const snap = await getDoc(doc(db,'converter','assignments'));
+    if (!snap.exists()) { setSaveStatus('none'); return; }
+    const data = snap.data();
+
+    // 저장된 배정 데이터 복원
+    if (data.assignments) {
+      Object.entries(data.assignments).forEach(([sid, val]) => {
+        if (assignments[sid]) {
+          assignments[sid].elem1 = val.elem1;
+          assignments[sid].elem2 = val.elem2;
+        }
+      });
+      isAssigned = true;
+      updateBadges();
+      updateDownloadTab();
+    }
+
+    if (data.savedAt) {
+      const d = new Date(data.savedAt);
+      const timeStr = `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      setSaveStatus('saved', timeStr);
+      document.getElementById('saved-time').innerHTML = `<strong>마지막 저장:</strong> ${timeStr}`;
+    }
+  } catch(err) {
+    setSaveStatus('none');
+    console.error('Firebase 불러오기 오류:', err);
+  }
+}
+
+function setSaveStatus(state, time='') {
+  const dot  = document.getElementById('save-dot');
+  const text = document.getElementById('save-text');
+  dot.className = 'save-dot';
+  if (state==='saving') { dot.classList.add('saving'); text.textContent = '저장 중...'; }
+  else if (state==='saved') { dot.classList.add('saved'); text.textContent = `저장됨 · ${time}`; }
+  else { text.textContent = '저장 정보 없음'; }
+}
+
+function pad(n) { return String(n).padStart(2,'0'); }
+
+// ── 조회 탭 ──
+window.onClsChange = function() {
+  const cls  = document.getElementById('search-cls').value;
+  const sel  = document.getElementById('search-name');
+  sel.innerHTML = '<option value="">이름 선택</option>';
+  if (!cls) return;
+  const students = Object.values(assignments)
+    .filter(s=>s.clsKey===cls).sort((a,b)=>a.num-b.num);
+  students.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = makeStudentId(s);
+    opt.textContent = `${s.num}번 ${s.name}`;
+    sel.appendChild(opt);
+  });
+  document.getElementById('search-result').innerHTML = '';
+};
+
+window.onNameChange = function() {
+  const sid = document.getElementById('search-name').value;
+  const el  = document.getElementById('search-result');
+  if (!sid || !assignments[sid]) { el.innerHTML=''; return; }
+  const s = assignments[sid];
+  if (s.elem1===null) {
+    el.innerHTML = `<div class="msg info">아직 원소가 배정되지 않았습니다. 선생님께 문의하세요.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="result-card">
+      <div class="res-name">${s.name}</div>
+      <div class="res-cls">${s.clsKey}반 · ${s.num}번</div>
+      <div class="res-elems">
+        <div class="res-elem">
+          <div class="elem-no">${s.elem1}</div>
+          <div class="elem-label">원소 1번</div>
+        </div>
+        <div class="res-elem">
+          <div class="elem-no">${s.elem2}</div>
+          <div class="elem-label">원소 2번</div>
+        </div>
+      </div>
+    </div>`;
+};
+
+window.renderClassList = function() {
+  const cls = document.getElementById('list-cls').value;
+  const el  = document.getElementById('class-list-table');
+  if (!cls) { el.innerHTML=''; return; }
+  const students = Object.values(assignments)
+    .filter(s=>s.clsKey===cls).sort((a,b)=>a.num-b.num);
+  if (!students.length) { el.innerHTML='<p style="color:var(--text-muted);font-size:.88rem">학생 데이터가 없습니다.</p>'; return; }
+  el.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>번호</th><th>이름</th><th>원소1</th><th>원소2</th></tr></thead>
+        <tbody>${students.map(s=>`
+          <tr>
+            <td>${s.num}</td>
+            <td class="td-name">${s.name}</td>
+            <td class="td-elem">${s.elem1!==null?s.elem1:'—'}</td>
+            <td class="td-elem">${s.elem2!==null?s.elem2:'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+};
+
+// ── 다운로드 탭 ──
+function updateDownloadTab() {
+  const btn     = document.getElementById('btn-download');
+  const dlStatus = document.getElementById('dl-status');
+  const preview  = document.getElementById('json-preview');
+
+  if (!isAssigned) {
+    btn.disabled = true;
+    dlStatus.innerHTML = '<div class="msg info">원소 배정 후 다운로드할 수 있습니다.</div>';
+    preview.textContent = '';
+    return;
   }
 
-  // 테이블 미리보기
-  const tbody = document.getElementById('preview-body');
-  tbody.innerHTML = parsedData.map(r => {
-    const clsKey = `2-${r.cls}`;
-    const e1ok = !isNaN(r.elem1) && r.elem1 >= 1 && r.elem1 <= 118;
-    const e2ok = !isNaN(r.elem2) && r.elem2 >= 1 && r.elem2 <= 118;
-    const ok   = e1ok && e2ok;
-    return `<tr>
-      <td>${clsKey}반</td>
-      <td>${r.num}</td>
-      <td>${r.name}</td>
-      <td class="${e1ok?'td-elem':'td-err'}">${r.elem1}</td>
-      <td class="${e2ok?'td-elem':'td-err'}">${r.elem2}</td>
-      <td>${ok ? '✅' : '❌'}</td>
-    </tr>`;
-  }).join('');
+  // JSON 생성
+  const json = buildJSON();
+  btn.disabled = false;
+  const cnt = Object.keys(json).length;
+  dlStatus.innerHTML = `<div class="msg success">✓ ${cnt}명 배정 완료 · 다운로드 준비됐습니다</div>`;
+  const sample = Object.fromEntries(Object.entries(json).slice(0,6));
+  preview.textContent = JSON.stringify(sample, null, 2) + `\n\n... (전체 ${cnt}명)`;
 }
 
-function generateJSON() {
-  jsonResult = {};
-  parsedData.forEach(r => {
-    const sid = makeStudentId(r);
-    jsonResult[sid] = {
-      name:     r.name,
-      cls:      `2-${r.cls}`,
-      elements: [r.elem1, r.elem2]
-    };
+function buildJSON() {
+  const json = {};
+  Object.entries(assignments).forEach(([sid, s]) => {
+    if (s.elem1 !== null) {
+      json[sid] = { name: s.name, cls: s.clsKey, elements: [s.elem1, s.elem2] };
+    }
   });
-
-  setStep(3);
-  document.getElementById('section-preview').classList.add('hidden');
-  document.getElementById('section-download').classList.remove('hidden');
-
-  const classes = [...new Set(parsedData.map(r=>`2-${r.cls}`))].sort();
-  document.getElementById('done-summary').textContent =
-    `${parsedData.length}명 · ${classes.join(', ')}반 · 원소 카드 ${parsedData.length*2}장`;
-
-  // JSON 미리보기 (처음 5명만)
-  const preview = Object.fromEntries(Object.entries(jsonResult).slice(0, 5));
-  document.getElementById('json-preview').textContent =
-    JSON.stringify(preview, null, 2) + '\n\n... (전체 ' + Object.keys(jsonResult).length + '명)';
+  return json;
 }
 
-function makeStudentId(r) {
-  // 학번: 학년(1자리) + 반(2자리) + 번호(2자리)
-  // 예) 2학년 1반 1번 → 20101, 2학년 10반 26번 → 21026
-  const clsPad = String(r.cls).padStart(2, '0');
-  const numPad = String(r.num).padStart(2, '0');
-  return `${r.grade}${clsPad}${numPad}`;
-}
-
-function downloadJSON() {
-  const blob = new Blob([JSON.stringify(jsonResult, null, 2)], { type:'application/json' });
+window.downloadJSON = function() {
+  const json = buildJSON();
+  const blob = new Blob([JSON.stringify(json, null, 2)], { type:'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'students.json';
-  a.click();
+  a.href=url; a.download='students.json'; a.click();
   URL.revokeObjectURL(url);
-}
+};
 
-function reset() {
-  parsedData = [];
-  jsonResult = {};
-  document.getElementById('file-input').value = '';
-  document.getElementById('file-name').textContent = '';
-  document.getElementById('section-upload').classList.remove('hidden');
-  document.getElementById('section-preview').classList.add('hidden');
-  document.getElementById('section-download').classList.add('hidden');
-  setStep(1);
-}
-
-function setStep(n) {
-  [1,2,3].forEach(i => {
-    const el = document.getElementById(`step${i}`);
-    el.classList.remove('active','done');
-    if (i < n) el.classList.add('done');
-    else if (i === n) el.classList.add('active');
+// ── 탭 전환 ──
+window.switchTab = function(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['assign','view','download'];
+    t.classList.toggle('active', tabs[i]===name);
   });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name==='download') updateDownloadTab();
+  if (name==='view') {
+    // 조회 탭 셀렉트 갱신
+    ['search-cls','list-cls'].forEach(id=>{
+      const sel=document.getElementById(id);
+      const cur=sel.value;
+      sel.innerHTML='<option value="">반 선택</option>'+classList.map(c=>`<option value="${c}">${c}반</option>`).join('');
+      if(cur) sel.value=cur;
+    });
+  }
+};
+
+// ── Firebase에서 초기 데이터 로드 (엑셀 없이 접속 시) ──
+async function initLoad() {
+  try {
+    const snap = await getDoc(doc(db,'converter','assignments'));
+    if (!snap.exists()) return;
+    const data = snap.data();
+    if (!data.assignments) return;
+
+    // assignments 복원
+    assignments = data.assignments;
+    classList   = data.classList || [];
+    isAssigned  = true;
+
+    // allStudents 복원 (조회용)
+    allStudents = Object.values(assignments).map(s=>({
+      grade: s.grade, cls: s.cls, num: s.num, name: s.name
+    }));
+
+    renderUploadResult();
+    updateBadges();
+    document.getElementById('assign-section').classList.remove('hidden');
+    updateDownloadTab();
+
+    if (data.savedAt) {
+      const d = new Date(data.savedAt);
+      const timeStr = `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      setSaveStatus('saved', timeStr);
+      document.getElementById('saved-time').innerHTML = `<strong>마지막 저장:</strong> ${timeStr}`;
+    }
+  } catch(err) {
+    console.error('초기 로드 오류:', err);
+  }
 }
+
+initLoad();
 </script>
 </body>
 </html>
