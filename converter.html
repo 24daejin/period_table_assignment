@@ -6,6 +6,8 @@
 <title>원소 배정 도구</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root{
     --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#2a3550;
@@ -134,7 +136,7 @@
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('assign')">📊 원소 배정</button>
   <button class="tab" onclick="switchTab('view')">🔍 학생 조회</button>
-  <button class="tab" onclick="switchTab('download')">💾 JSON 다운로드</button>
+  <button class="tab" onclick="switchTab('cards')">🖼️ 카드 다운로드</button>
 </div>
 
 <!-- ── 탭 1: 원소 배정 ── -->
@@ -212,26 +214,46 @@
   </div>
 </div>
 
-<!-- ── 탭 3: JSON 다운로드 ── -->
-<div class="tab-content" id="tab-download">
+<!-- ── 탭 4: 카드 다운로드 ── -->
+<div class="tab-content" id="tab-cards">
   <div class="card">
-    <div class="card-title">💾 students.json 다운로드</div>
-    <div id="dl-status"></div>
+    <div class="card-title">🖼️ 원소 카드 ZIP 다운로드</div>
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.7">
+      반을 선택하면 해당 반 학생들의 원소 카드를 ZIP으로 일괄 다운로드합니다.<br>
+      파일명: <code style="color:var(--accent)">반_번호_이름_앞면.png</code> 형식으로 저장됩니다.
+    </p>
+
+    <div class="search-box" style="margin-bottom:1rem">
+      <select id="dl-cls" onchange="onDlClsChange()">
+        <option value="">반 선택</option>
+      </select>
+    </div>
+
+    <div id="dl-cls-info" style="margin-bottom:1rem"></div>
+
     <div class="btn-row">
-      <button class="btn btn-success" id="btn-download" onclick="downloadJSON()" disabled>💾 students.json 다운로드</button>
+      <button class="btn btn-primary" id="btn-zip" onclick="downloadZip()" disabled>
+        📦 ZIP 다운로드
+      </button>
     </div>
-    <div style="margin-top:1.25rem">
-      <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem">JSON 미리보기</p>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'Space Mono',monospace;font-size:.72rem;color:var(--text-muted);max-height:260px;overflow-y:auto;line-height:1.8;white-space:pre-wrap;word-break:break-all" id="json-preview"></div>
+
+    <div id="dl-progress" class="hidden" style="margin-top:1.25rem">
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.5rem" id="dl-progress-label">준비 중...</div>
+      <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+        <div id="dl-progress-fill" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .3s;width:0%"></div>
+      </div>
     </div>
+
+    <div id="dl-result" style="margin-top:1rem"></div>
   </div>
 
   <div class="card">
-    <div class="card-title">📌 다음 단계</div>
+    <div class="card-title">📋 다운로드 안내</div>
     <p style="font-size:.88rem;color:var(--text-muted);line-height:2">
-      1. 다운로드한 <code style="color:var(--accent)">students.json</code>을 GitHub 레포 루트에 업로드<br>
-      2. 기존 파일을 덮어쓰기하면 즉시 반영됩니다<br>
-      3. 배포 URL에서 학생 로그인이 정상 작동하는지 테스트하세요
+      · 카드를 아직 업로드하지 않은 학생은 자동으로 건너뜁니다<br>
+      · 앞면과 뒷면이 각각 별도 파일로 저장됩니다<br>
+      · 파일명 형식: <code style="color:var(--accent)">2-1반_01번_김민준_앞면.png</code><br>
+      · 브라우저 팝업 차단이 설정되어 있으면 다운로드가 안 될 수 있습니다
     </p>
   </div>
 </div>
@@ -617,19 +639,137 @@ function buildJSON() {
   return json;
 }
 
-window.downloadJSON = function() {
-  const json = buildJSON();
-  const blob = new Blob([JSON.stringify(json, null, 2)], { type:'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download='students.json'; a.click();
-  URL.revokeObjectURL(url);
+// ── 카드 ZIP 다운로드 ──
+window.onDlClsChange = function() {
+  const cls = document.getElementById('dl-cls').value;
+  const btn = document.getElementById('btn-zip');
+  const info = document.getElementById('dl-cls-info');
+  document.getElementById('dl-result').innerHTML = '';
+
+  if (!cls) { btn.disabled=true; info.innerHTML=''; return; }
+
+  // 해당 반에서 카드가 업로드된 학생 수 파악
+  const students = Object.values(assignments).filter(s => s.clsKey === cls);
+  const total    = students.length;
+
+  info.innerHTML = `
+    <div class="stats">
+      <div class="stat">${cls}반 전체 <span>${total}명</span></div>
+      <div class="stat">예상 파일 수 <span>최대 ${total*2}개</span></div>
+    </div>
+    <div class="msg info" style="margin:0">
+      업로드된 카드만 다운로드됩니다. 미업로드 학생은 자동 건너뜁니다.
+    </div>`;
+
+  btn.disabled = total === 0;
 };
 
+window.downloadZip = async function() {
+  const cls = document.getElementById('dl-cls').value;
+  if (!cls) return;
+
+  const btn       = document.getElementById('btn-zip');
+  const progWrap  = document.getElementById('dl-progress');
+  const progLabel = document.getElementById('dl-progress-label');
+  const progFill  = document.getElementById('dl-progress-fill');
+  const result    = document.getElementById('dl-result');
+
+  btn.disabled = true;
+  progWrap.classList.remove('hidden');
+  result.innerHTML = '';
+
+  try {
+    // Firestore에서 해당 반 카드 데이터 가져오기
+    const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await getDocs(collection(db, 'classes', cls, 'elements'));
+
+    const cards = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.frontUrl || d.backUrl) cards.push(d);
+    });
+
+    if (cards.length === 0) {
+      result.innerHTML = '<div class="msg error">업로드된 카드가 없습니다.</div>';
+      progWrap.classList.add('hidden');
+      btn.disabled = false;
+      return;
+    }
+
+    // 학번 → 학생 정보 맵
+    const studentMap = {};
+    Object.entries(assignments).forEach(([sid, s]) => {
+      if (s.clsKey === cls) {
+        [s.elem1, s.elem2].forEach(no => { if (no !== null) studentMap[no] = s; });
+      }
+    });
+
+    const zip   = new JSZip();
+    const total = cards.reduce((acc, c) => acc + (c.frontUrl?1:0) + (c.backUrl?1:0), 0);
+    let   done  = 0;
+
+    for (const card of cards) {
+      const s      = studentMap[card.elementNo];
+      const numStr = s ? String(s.num).padStart(2,'0') : String(card.elementNo).padStart(3,'0');
+      const name   = s ? s.name : `원소${card.elementNo}`;
+      const prefix = `${cls}반_${numStr}번_${name}`;
+
+      // 앞면 다운로드
+      if (card.frontUrl) {
+        progLabel.textContent = `${prefix} 앞면 받는 중... (${done+1}/${total})`;
+        try {
+          const blob = await fetchImageAsBlob(card.frontUrl);
+          zip.file(`${prefix}_앞면.png`, blob);
+        } catch(e) { console.warn('앞면 다운로드 실패:', prefix, e); }
+        done++;
+        progFill.style.width = `${Math.round(done/total*100)}%`;
+      }
+
+      // 뒷면 다운로드
+      if (card.backUrl) {
+        progLabel.textContent = `${prefix} 뒷면 받는 중... (${done+1}/${total})`;
+        try {
+          const blob = await fetchImageAsBlob(card.backUrl);
+          zip.file(`${prefix}_뒷면.png`, blob);
+        } catch(e) { console.warn('뒷면 다운로드 실패:', prefix, e); }
+        done++;
+        progFill.style.width = `${Math.round(done/total*100)}%`;
+      }
+    }
+
+    // ZIP 생성 및 다운로드
+    progLabel.textContent = 'ZIP 파일 생성 중...';
+    const zipBlob = await zip.generateAsync({ type:'blob', compression:'DEFLATE' });
+    const url     = URL.createObjectURL(zipBlob);
+    const a       = document.createElement('a');
+    a.href        = url;
+    a.download    = `원소카드_${cls}반.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    progFill.style.width = '100%';
+    progLabel.textContent = '완료!';
+    result.innerHTML = `<div class="msg success">✓ ${cls}반 카드 ${done}장 다운로드 완료!</div>`;
+
+  } catch(err) {
+    console.error('ZIP 다운로드 오류:', err);
+    result.innerHTML = `<div class="msg error">오류 발생: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => progWrap.classList.add('hidden'), 3000);
+  }
+};
+
+async function fetchImageAsBlob(url) {
+  // CORS 우회: Firebase Storage URL은 직접 fetch 가능
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.blob();
+}
 // ── 탭 전환 ──
 window.switchTab = function(name) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    const tabs = ['assign','view','download'];
+    const tabs = ['assign','view','card'];
     t.classList.toggle('active', tabs[i]===name);
   });
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
