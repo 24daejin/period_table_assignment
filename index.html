@@ -89,25 +89,40 @@
   .element-cell.no-card.lanthanide{border-left:2px solid var(--col-lanthanide);}
   .element-cell.no-card.actinide{border-left:2px solid var(--col-actinide);}
 
-  /* 모달 */
-  #modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;}
-  #modal-overlay.active{display:flex;}
-  .modal-card{width:min(500px,90vw);perspective:1000px;}
-  .card-flipper{position:relative;width:100%;padding-bottom:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);}
+  /* 모달 배경 딤 */
+  #modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0);display:none;transition:background .35s ease;}
+  #modal-overlay.active{background:rgba(0,0,0,.75);}
+  
+  /* 카드: 셀 위치에서 중앙으로 이동 */
+  .modal-card{
+    position:fixed;z-index:201;
+    width:min(480px,88vw);
+    perspective:1200px;
+    pointer-events:none;
+    opacity:0;
+    transition:top .45s cubic-bezier(.4,0,.2,1),left .45s cubic-bezier(.4,0,.2,1),width .45s cubic-bezier(.4,0,.2,1),height .45s cubic-bezier(.4,0,.2,1),opacity .3s ease;
+  }
+  .modal-card.active{pointer-events:auto;opacity:1;}
+  
+  .card-flipper{width:100%;padding-bottom:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);}
   .card-flipper.flipped{transform:rotateY(180deg);}
-  .card-face{position:absolute;inset:0;border-radius:20px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--border);}
+  .card-face{position:absolute;inset:0;border-radius:16px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--border);box-shadow:0 24px 60px rgba(0,0,0,.6);}
   .card-face img{width:100%;height:100%;object-fit:cover;display:block;}
   .card-face-back{transform:rotateY(180deg);}
-  .card-face.no-image{background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem;}
+  .card-face.no-image{background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.75rem;}
   .card-face.no-image span{font-size:3rem;}
   .card-face.no-image p{color:var(--text-muted);font-size:.9rem;}
-  .modal-controls{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;gap:.75rem;}
+  
+  .modal-controls{display:flex;align-items:center;justify-content:space-between;margin-top:.85rem;gap:.75rem;opacity:0;transform:translateY(8px);transition:opacity .3s ease .25s,transform .3s ease .25s;}
+  .modal-card.active .modal-controls{opacity:1;transform:translateY(0);}
   .modal-element-name{font-size:1.1rem;font-weight:700;flex:1;}
   .modal-element-sub{font-size:.78rem;color:var(--text-muted);}
   .flip-btn{font-family:'Noto Sans KR',sans-serif;font-size:.8rem;padding:.5rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s;white-space:nowrap;}
   .flip-btn:hover{border-color:var(--accent);color:var(--accent);}
   .close-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
   .close-btn:hover{border-color:#f87171;color:#f87171;}
+  .modal-hint{text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:.5rem;opacity:0;transition:opacity .3s ease .4s;}
+  .modal-card.active .modal-hint{opacity:.6;}
   .loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;}
   @keyframes spin{to{transform:rotate(360deg);}}
 </style>
@@ -179,22 +194,24 @@
   </div>
 </div>
 
-<!-- 모달 -->
-<div id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-card" onclick="event.stopPropagation()">
-    <div class="card-flipper" id="card-flipper">
-      <div class="card-face card-face-front" id="modal-front"></div>
-      <div class="card-face card-face-back"  id="modal-back"></div>
-    </div>
-    <div class="modal-controls">
-      <div>
-        <div class="modal-element-name" id="modal-name"></div>
-        <div class="modal-element-sub"  id="modal-sub"></div>
-      </div>
-      <button class="flip-btn" onclick="flipCard()">뒤집기 🔄</button>
-      <button class="close-btn" onclick="closeModalBtn()">✕</button>
-    </div>
+<!-- 배경 딤 -->
+<div id="modal-overlay" onclick="closeModalBtn()"></div>
+
+<!-- 카드 (overlay 밖, 독립 레이어) -->
+<div class="modal-card" id="modal-card">
+  <div class="card-flipper" id="card-flipper">
+    <div class="card-face card-face-front" id="modal-front"></div>
+    <div class="card-face card-face-back"  id="modal-back"></div>
   </div>
+  <div class="modal-controls">
+    <div>
+      <div class="modal-element-name" id="modal-name"></div>
+      <div class="modal-element-sub"  id="modal-sub"></div>
+    </div>
+    <button class="flip-btn" onclick="flipCard()">뒤집기 🔄</button>
+    <button class="close-btn" onclick="closeModalBtn()">✕</button>
+  </div>
+  <div class="modal-hint">배경을 클릭하면 닫힙니다</div>
 </div>
 
 <script type="module">
