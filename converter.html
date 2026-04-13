@@ -323,13 +323,14 @@ function renderUploadResult() {
 
   const grid = document.getElementById('cls-grid');
   grid.innerHTML = classList.map(cls => {
-    const cnt = allStudents.filter(s=>`${s.grade}-${s.cls}`===cls).length;
+    const cnt = allStudents.filter(s=>`${s.grade}-${s.cls}`===cls).length
+              || Object.values(assignments).filter(s=>s.clsKey===cls).length;
     const key = cls.replace('-','_');
     return `<div class="cls-card" id="clscard-${key}">
       <div class="cls-name" onclick="showClsDetail('${cls}')" style="cursor:pointer">${cls}반</div>
       <div class="cls-count">${cnt}명 · 원소 1~${cnt*2}번</div>
       <div class="cls-badge" id="badge-${key}">⬜ 미배정</div>
-      <button class="btn" style="margin-top:.5rem;font-size:.72rem;padding:.3rem .7rem;width:100%"
+      <button class="btn" style="margin-top:.6rem;font-size:.75rem;padding:.4rem .7rem;width:100%;border-color:var(--accent);color:var(--accent);"
         onclick="event.stopPropagation();assignOne('${cls}')">🎲 이 반 배정</button>
     </div>`;
   }).join('');
