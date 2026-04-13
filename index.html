@@ -322,23 +322,26 @@ async function init() {
 }
 
 async function loadStudents() {
-  const snap = await getDoc(doc(db, 'converter', 'assignments'));
-  if (!snap.exists()) {
-    console.error('converter/assignments 문서가 없습니다.');
-    return;
-  }
-  const data = snap.data();
-  students = {};
-  // assignments 필드에서 현재 URL 학급 학생만 필터링
-  Object.entries(data.assignments || {}).forEach(([sid, s]) => {
-    if (s.clsKey === urlClass) {
-      students[sid] = {
-        name:     s.name,
-        cls:      s.clsKey,
-        elements: s.elem1 !== null ? [s.elem1, s.elem2] : [],
-      };
+  try {
+    const snap = await getDoc(doc(db, 'converter', 'assignments'));
+    if (!snap.exists()) {
+      console.error('converter/assignments 문서가 없습니다.');
+      return;
     }
-  });
+    const data = snap.data();
+    students = {};
+    Object.entries(data.assignments || {}).forEach(([sid, s]) => {
+      if (s.clsKey === urlClass) {
+        students[sid] = {
+          name:     s.name,
+          cls:      s.clsKey,
+          elements: s.elem1 !== null ? [s.elem1, s.elem2] : [],
+        };
+      }
+    });
+  } catch(err) {
+    console.error('학생 명단 로드 오류:', err);
+  }
 }
 // ── 로그인 ──
 // 학번으로 students에서 찾고, 이름 대조 후 cls가 urlClass와 일치하는지 확인
