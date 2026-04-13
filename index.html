@@ -216,7 +216,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import firebaseConfig from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -322,13 +322,21 @@ async function init() {
 }
 
 async function loadStudents() {
-  const snap = await getDocs(collection(db, 'students'));
+  const snap = await getDoc(doc(db, 'converter', 'assignments'));
+  if (!snap.exists()) {
+    console.error('converter/assignments 문서가 없습니다.');
+    return;
+  }
+  const data = snap.data();
   students = {};
-  snap.forEach(doc => {
-    const d = doc.data();
-    // 현재 URL 학급 학생만 필터링
-    if (d.cls === urlClass) {
-      students[doc.id] = d;
+  // assignments 필드에서 현재 URL 학급 학생만 필터링
+  Object.entries(data.assignments || {}).forEach(([sid, s]) => {
+    if (s.clsKey === urlClass) {
+      students[sid] = {
+        name:     s.name,
+        cls:      s.clsKey,
+        elements: s.elem1 !== null ? [s.elem1, s.elem2] : [],
+      };
     }
   });
 }
