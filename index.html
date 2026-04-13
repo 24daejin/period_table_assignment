@@ -216,7 +216,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import firebaseConfig from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -322,14 +322,16 @@ async function init() {
 }
 
 async function loadStudents() {
-  const res = await fetch('./students.json');
-  const all  = await res.json();
-  // 현재 URL 학급 학생만 필터링
-  students = Object.fromEntries(
-    Object.entries(all).filter(([, v]) => v.cls === urlClass)
-  );
+  const snap = await getDocs(collection(db, 'students'));
+  students = {};
+  snap.forEach(doc => {
+    const d = doc.data();
+    // 현재 URL 학급 학생만 필터링
+    if (d.cls === urlClass) {
+      students[doc.id] = d;
+    }
+  });
 }
-
 // ── 로그인 ──
 // 학번으로 students에서 찾고, 이름 대조 후 cls가 urlClass와 일치하는지 확인
 window.tryLogin = function() {
