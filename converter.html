@@ -64,7 +64,7 @@
 
   /* 반 선택 그리드 */
   .cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;margin-bottom:1.25rem;}
-  .cls-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;cursor:pointer;transition:all .2s;text-align:center;}
+  .cls-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;cursor:default;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;}
   .cls-card:hover{border-color:var(--accent);}
   .cls-card.active{border-color:var(--accent);background:rgba(79,142,247,.1);}
   .cls-card .cls-name{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.2rem;}
@@ -330,7 +330,7 @@ function renderUploadResult() {
       <div class="cls-name" onclick="showClsDetail('${cls}')" style="cursor:pointer">${cls}반</div>
       <div class="cls-count">${cnt}명 · 원소 1~${cnt*2}번</div>
       <div class="cls-badge" id="badge-${key}">⬜ 미배정</div>
-      <button class="btn" style="margin-top:.6rem;font-size:.75rem;padding:.4rem .7rem;width:100%;border-color:var(--accent);color:var(--accent);"
+      <button class="btn" style="margin-top:.6rem;font-size:.75rem;padding:.4rem .7rem;width:100%;border-color:var(--accent);color:var(--accent);flex-shrink:0;"
         onclick="event.stopPropagation();assignOne('${cls}')">🎲 이 반 배정</button>
     </div>`;
   }).join('');
