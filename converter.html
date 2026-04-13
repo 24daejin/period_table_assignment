@@ -446,6 +446,7 @@ function updateBadges() {
 async function saveToFirebase() {
   setSaveStatus('saving');
   try {
+    // ① converter 컬렉션에 배정 정보 저장 (기존과 동일)
     const payload = {
       assignments: assignments,
       classList,
@@ -453,6 +454,18 @@ async function saveToFirebase() {
       totalStudents: allStudents.length,
     };
     await setDoc(doc(db,'converter','assignments'), payload);
+
+    // ② students 컬렉션에 학생 명단 저장 (신규)
+    const batch = [];
+    Object.entries(assignments).forEach(([sid, s]) => {
+      batch.push(setDoc(doc(db,'students', sid), {
+        name:     s.name,
+        cls:      s.clsKey,
+        elements: s.elem1 !== null ? [s.elem1, s.elem2] : [],
+      }));
+    });
+    await Promise.all(batch);
+
     const now = new Date();
     const timeStr = `${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     setSaveStatus('saved', timeStr);
