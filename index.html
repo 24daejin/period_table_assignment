@@ -142,6 +142,9 @@
     <div id="user-info"></div>
     <button class="btn" id="upload-btn" style="display:none" onclick="goUpload()">내 카드 업로드</button>
     <button class="btn" id="logout-btn" style="display:none" onclick="logout()">로그아웃</button>
+    <select id="teacher-cls-select" style="display:none;font-family:'Noto Sans KR',sans-serif;font-size:.82rem;padding:.4rem .8rem;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);outline:none;cursor:pointer" onchange="onTeacherClsChange()">
+      <option value="">반 선택</option>
+    </select>
   </div>
 </header>
 
@@ -163,6 +166,29 @@
     <div id="login-error"></div>
     <button class="login-btn" onclick="tryLogin()">입장하기</button>
     <p class="login-note">로그인 정보는 이 기기에만 저장됩니다</p>
+    <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border)">
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem">교사이신가요?</p>
+      <div id="teacher-login-form" style="display:none">
+        <div class="form-group">
+          <label>이메일</label>
+          <input type="email" id="input-teacher-email" placeholder="teacher@school.kr"
+            onkeydown="if(event.key==='Enter')tryTeacherLogin()">
+        </div>
+        <div class="form-group">
+          <label>비밀번호</label>
+          <input type="password" id="input-teacher-pw" placeholder="비밀번호"
+            onkeydown="if(event.key==='Enter')tryTeacherLogin()">
+        </div>
+        <div id="teacher-login-error" style="font-size:.83rem;color:#f87171;margin-bottom:.9rem;display:none"></div>
+        <button class="login-btn" style="background:var(--accent2);border-color:var(--accent2)"
+          onclick="tryTeacherLogin()">교사 로그인</button>
+      </div>
+      <button class="btn" style="width:100%;font-size:.8rem"
+        onclick="document.getElementById('teacher-login-form').style.display=
+          document.getElementById('teacher-login-form').style.display==='none'?'block':'none'">
+        👩‍🏫 교사 로그인
+      </button>
+    </div>
   </div>
 </div>
 
@@ -217,10 +243,12 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import firebaseConfig from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+const auth = getAuth(app);
 
 const ELEMENTS = [
   [1,'H','수소',1,1,'nonmetal'],[2,'He','헬륨',1,18,'noble'],
@@ -293,45 +321,110 @@ const urlClass = params.get('class'); // "2-1" ~ "2-10"
 let students = {}, currentUser = null, cardData = {}, unsubscribe = null;
 
 async function init() {
-  // 학급 파라미터 없으면 오류 화면
   if (!urlClass) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('error-screen').style.display = 'flex';
-    return;
+    // URL 파라미터 없어도 교사 로그인은 허용
+    document.getElementById('error-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  } else {
+    document.getElementById('login-cls-badge').textContent = `${urlClass}반`;
+    document.getElementById('class-badge').textContent     = `${urlClass}반`;
+    document.title = `${urlClass}반 원소 주기율표`;
   }
 
-  document.getElementById('login-cls-badge').textContent = `${urlClass}반`;
-  document.getElementById('class-badge').textContent = `${urlClass}반`;
-  document.title = `${urlClass}반 원소 주기율표`;
-
-  await loadStudents();
-
-  // 세션 복원 — 저장된 학급과 현재 URL 학급이 같아야만 복원
-  const saved = sessionStorage.getItem('user');
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    if (parsed.cls === urlClass) {
-      currentUser = parsed;
-      showMain();
-      return;
+  // Firebase Auth 상태 감지
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // 교사 로그인 상태
+      await showTeacherMain();
     } else {
-      // 다른 반 URL로 접속하면 세션 초기화
-      sessionStorage.removeItem('user');
+      // 학생 로그인 확인
+      if (urlClass) {
+        await loadStudents();
+        const saved = sessionStorage.getItem('user');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.cls === urlClass) {
+            currentUser = parsed;
+            showMain();
+          } else {
+            sessionStorage.removeItem('user');
+          }
+        }
+      }
     }
-  }
+  });
 }
 
+// ── 교사 로그인 ──
+let isTeacher = false;
+
+window.tryTeacherLogin = async function() {
+  const email = document.getElementById('input-teacher-email').value.trim();
+  const pw    = document.getElementById('input-teacher-pw').value;
+  const errEl = document.getElementById('teacher-login-error');
+  errEl.style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+    // onAuthStateChanged가 자동으로 교사 화면 처리
+  } catch(err) {
+    errEl.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+    errEl.style.display = 'block';
+  }
+};
+
+async function showTeacherMain() {
+  isTeacher = true;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-screen').style.display  = 'block';
+  document.getElementById('user-info').style.display    = 'block';
+  document.getElementById('logout-btn').style.display   = 'block';
+  document.getElementById('upload-btn').style.display   = 'none'; // 교사는 업로드 버튼 불필요
+  document.getElementById('user-info').innerHTML = `<strong>교사</strong> · 전체 반 조회`;
+
+  // 반 목록 로드
+  await loadStudents(); // urlClass가 null이면 전체 로드 필요
+  const clsSel = document.getElementById('teacher-cls-select');
+  clsSel.style.display = 'block';
+  clsSel.innerHTML = '<option value="">반 선택</option>' +
+    [...new Set(Object.values(students).map(s=>s.cls))]
+      .sort((a,b)=>{ const [,an]=a.split('-'),[,bn]=b.split('-'); return parseInt(an)-parseInt(bn); })
+      .map(c=>`<option value="${c}">${c}반</option>`).join('');
+
+  buildTable();
+}
+
+window.onTeacherClsChange = function() {
+  const cls = document.getElementById('teacher-cls-select').value;
+  if (!cls) return;
+  // 현재 구독 해제 후 새 반 구독
+  if (typeof unsubscribe === 'function') unsubscribe();
+  cardData = {};
+  updateCells();
+  document.getElementById('class-badge').textContent = `${cls}반`;
+  document.getElementById('progress-text').textContent = '카드를 불러오는 중... ';
+  unsubscribe = onSnapshot(collection(db,'classes',cls,'elements'), snap => {
+    cardData = {};
+    snap.forEach(d => { const v=d.data(); cardData[v.elementNo]=v; });
+    updateCells();
+    // 진행도는 해당 반 학생 수 기준
+    const clsStudents = Object.values(students).filter(s=>s.cls===cls);
+    const total = clsStudents.length * 2;
+    const done  = Object.values(cardData).filter(c=>c.frontUrl).length;
+    document.getElementById('progress-text').textContent = `${done}개 원소 카드 완성`;
+    document.getElementById('progress-count').textContent = `${done} / ${total}`;
+    document.getElementById('progress-fill').style.width = `${total>0?Math.round(done/total*100):0}%`;
+  });
+};  
+  
 async function loadStudents() {
   try {
     const snap = await getDoc(doc(db, 'converter', 'assignments'));
-    if (!snap.exists()) {
-      console.error('converter/assignments 문서가 없습니다.');
-      return;
-    }
+    if (!snap.exists()) return;
     const data = snap.data();
     students = {};
     Object.entries(data.assignments || {}).forEach(([sid, s]) => {
-      if (s.clsKey === urlClass) {
+      // 교사면 전체, 학생이면 해당 반만
+      if (isTeacher || s.clsKey === urlClass) {
         students[sid] = {
           name:     s.name,
           cls:      s.clsKey,
@@ -343,6 +436,7 @@ async function loadStudents() {
     console.error('학생 명단 로드 오류:', err);
   }
 }
+  
 // ── 로그인 ──
 // 학번으로 students에서 찾고, 이름 대조 후 cls가 urlClass와 일치하는지 확인
 window.tryLogin = function() {
@@ -372,7 +466,16 @@ window.tryLogin = function() {
   showMain();
 };
 
-window.logout = function() { sessionStorage.removeItem('user'); location.reload(); };
+window.logout = async function() {
+  if (isTeacher) {
+    await signOut(auth);
+    isTeacher = false;
+    document.getElementById('teacher-cls-select').style.display = 'none';
+  } else {
+    sessionStorage.removeItem('user');
+  }
+  location.reload();
+};
 
 // upload.html로 이동할 때도 class 파라미터 유지
 window.goUpload = function() {
