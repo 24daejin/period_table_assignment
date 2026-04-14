@@ -475,14 +475,18 @@ function assignClass(cls) {
   const students = allStudents
     .filter(s => `${s.grade}-${s.cls}` === cls)
     .sort((a,b) => a.num - b.num);
-  const maxElem = students.length * 2;
-  const pool    = shuffle(Array.from({ length: maxElem }, (_,i) => i+1));
+  const count = students.length;
+
+  // 앞 구간: 1 ~ count, 뒤 구간: count+1 ~ count*2
+  const frontPool = shuffle(Array.from({ length: count }, (_, i) => i + 1));
+  const backPool  = shuffle(Array.from({ length: count }, (_, i) => count + i + 1));
 
   students.forEach((s, i) => {
-    const sid = makeStudentId(s);
-    const a   = pool[i*2], b = pool[i*2+1];
-    assignments[sid].elem1 = Math.min(a,b);
-    assignments[sid].elem2 = Math.max(a,b);
+    const sid  = makeStudentId(s);
+    const a    = frontPool[i]; // 앞 구간에서 1개
+    const b    = backPool[i];  // 뒤 구간에서 1개
+    assignments[sid].elem1 = Math.min(a, b); // 작은 번호 → 원소1
+    assignments[sid].elem2 = Math.max(a, b); // 큰 번호  → 원소2
   });
 }
 
