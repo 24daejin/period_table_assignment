@@ -385,10 +385,17 @@ async function showTeacherMain() {
   await loadStudents(); // urlClass가 null이면 전체 로드 필요
   const clsSel = document.getElementById('teacher-cls-select');
   clsSel.style.display = 'block';
+  const clsList = [...new Set(Object.values(students).map(s=>s.cls))]
+    .sort((a,b)=>{ const [,an]=a.split('-'),[,bn]=b.split('-'); return parseInt(an)-parseInt(bn); });
+
   clsSel.innerHTML = '<option value="">반 선택</option>' +
-    [...new Set(Object.values(students).map(s=>s.cls))]
-      .sort((a,b)=>{ const [,an]=a.split('-'),[,bn]=b.split('-'); return parseInt(an)-parseInt(bn); })
-      .map(c=>`<option value="${c}">${c}반</option>`).join('');
+    clsList.map(c=>`<option value="${c}">${c}반</option>`).join('');
+
+  // 첫 번째 반으로 자동 선택
+  if (clsList.length > 0) {
+    clsSel.value = clsList[0];
+    onTeacherClsChange();
+  }
 
   buildTable();
 }
