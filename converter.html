@@ -858,6 +858,7 @@ async function fetchImageAsBlob(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.blob();
+}
   // ── 원소 이름 목록 (교사 업로드용) ──
 const ELEM_NAMES = {
   1:'수소',2:'헬륨',3:'리튬',4:'베릴륨',5:'붕소',6:'탄소',7:'질소',8:'산소',
@@ -1023,7 +1024,7 @@ async function uploadTeacherFile(file, path, getStorage, ref, uploadBytesResumab
 // ── 탭 전환 ──
 window.switchTab = function(name) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    const tabs = ['assign','view','download','cards','teacher']; // teacher 추가
+    const tabs = ['assign','view','cards','teacher']; // teacher 추가
     t.classList.toggle('active', tabs[i]===name);
   });
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
