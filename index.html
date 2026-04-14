@@ -408,8 +408,13 @@ window.onTeacherClsChange = function() {
     updateCells();
     // 진행도는 해당 반 학생 수 기준
     const clsStudents = Object.values(students).filter(s=>s.cls===cls);
-    const total = clsStudents.length * 2;
-    const done  = Object.values(cardData).filter(c=>c.frontUrl).length;
+    const total       = clsStudents.length * 2;
+    const maxElemNo   = total; // 학생 수 × 2 = 배정 범위 상한
+
+    // 배정 범위 안의 원소만 완성도에 포함 (교사 업로드 예시 카드 제외)
+    const done = Object.values(cardData)
+      .filter(c => c.frontUrl && c.elementNo <= maxElemNo).length;
+    
     document.getElementById('progress-text').textContent = `${done}개 원소 카드 완성`;
     document.getElementById('progress-count').textContent = `${done} / ${total}`;
     document.getElementById('progress-fill').style.width = `${total>0?Math.round(done/total*100):0}%`;
@@ -554,8 +559,10 @@ function updateCells() {
 }
 
 function updateProgress() {
-  const total = Object.keys(students).length * 2;
-  const done  = Object.values(cardData).filter(c => c.frontUrl).length;
+  const total     = Object.keys(students).length * 2;
+  const maxElemNo = total;
+  const done      = Object.values(cardData)
+    .filter(c => c.frontUrl && c.elementNo <= maxElemNo).length;
   const pct   = total > 0 ? Math.round(done / total * 100) : 0;
   document.getElementById('progress-text').textContent  = `${done}개 원소 카드 완성 · 클릭하면 자세히 볼 수 있어요`;
   document.getElementById('progress-count').textContent = `${done} / ${total}`;
