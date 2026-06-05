@@ -572,7 +572,7 @@ window.autoFindPage = function() {
   if (!pdfDoc || !allStudents.length) return;
   const s = allStudents[currentIdx];
   // 학번순 정렬 기준 인덱스 × 2 (앞면/뒷면 2페이지씩)
-  const estimatedPage = Math.max(1, currentIdx * 2 + 1);
+  const estimatedPage = Math.max(1, currentIdx + 1);
   if (estimatedPage <= totalPdfPages) renderPdfPage(estimatedPage);
 };
 
