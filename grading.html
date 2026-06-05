@@ -402,7 +402,9 @@ async function init() {
 }
 
 window.onApiKeyInput = function() {
-  sessionStorage.setItem('openai_key', document.getElementById('api-key-input').value.trim());
+  const raw = document.getElementById('api-key-input').value;
+  const clean = raw.replace(/[^\x20-\x7E]/g, '').trim();
+  sessionStorage.setItem('openai_key', clean);
   checkCanStart();
 };
 
@@ -675,9 +677,11 @@ window.runAI = async function() {
     } catch(e) { console.warn('PDF 페이지 변환 실패', e); }
   }
 
-  const apiKey = sessionStorage.getItem('openai_key') || document.getElementById('api-key-input').value.trim();
-  if (!apiKey) {
-    statusEl.innerHTML = '<div class="msg error">OpenAI API 키를 입력해 주세요.</div>';
+  const rawKey = sessionStorage.getItem('openai_key') || document.getElementById('api-key-input').value;
+  // 영문/숫자/하이픈만 남기고 나머지 제거
+  const apiKey = rawKey.replace(/[^\x20-\x7E]/g, '').trim();
+  if (!apiKey || !apiKey.startsWith('sk-')) {
+    statusEl.innerHTML = '<div class="msg error">올바른 OpenAI API 키를 입력해 주세요. (sk- 로 시작해야 합니다)</div>';
     btn.disabled = false; return;
   }
 
