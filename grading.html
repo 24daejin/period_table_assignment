@@ -507,7 +507,7 @@ function buildProgressGrid() {
   grid.innerHTML = allStudents.map((s, i) => {
     const g = grades[s.studentId];
     const isDone = g && g.accuracy !== undefined;
-    const total  = isDone ? 50 + g.accuracy + g.creativity + g.completion : null;
+    const total  = isDone ? g.accuracy + g.creativity + g.completion : null;
     return `<div class="prog-chip ${isDone ? 'done' : ''}" id="chip-${i}" onclick="goToStudent(${i})">
       <div class="chip-name">${s.num}. ${s.name}</div>
       <div class="chip-score">${isDone ? total + '점' : '미채점'}</div>
@@ -647,7 +647,7 @@ function updateTotal() {
   const c = tempScores.creativity ?? 0;
   const d = tempScores.completion ?? 0;
   const hasAny = tempScores.accuracy !== null || tempScores.creativity !== null || tempScores.completion !== null;
-  document.getElementById('total-score-val').textContent = hasAny ? 50 + a + c + d : '—';
+  document.getElementById('total-score-val').textContent = hasAny ? a + c + d : '—';
 }
 
 // ── AI 채점 ──
