@@ -809,7 +809,8 @@ window.downloadZip = async function() {
       const s      = studentMap[card.elementNo];
       const numStr = s ? String(s.num).padStart(2,'0') : String(card.elementNo).padStart(3,'0');
       const name   = s ? s.name : `원소${card.elementNo}`;
-      const prefix = `${cls}반_${numStr}번_${name}`;
+      const elemNoStr = String(card.elementNo).padStart(2, '0');
+      const prefix = `${cls}반_${numStr}번_${name}_${elemNoStr}번원소`;
 
       // 앞면 다운로드
       if (card.frontUrl) {
