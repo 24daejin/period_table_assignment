@@ -267,7 +267,7 @@
               <div class="label">총점 (기본점수 50점 포함)</div>
               <div>
                 <span class="score" id="total-score-val">—</span>
-                <span class="max">/ 150</span>
+                <span class="max">/ 100</span>
               </div>
             </div>
 
@@ -811,7 +811,7 @@ window.saveGrade = async function() {
     return;
   }
 
-  const total = 50 + tempScores.accuracy + tempScores.creativity + tempScores.completion;
+  const total = tempScores.accuracy + tempScores.creativity + tempScores.completion;
   const aiComment = document.getElementById('ai-comment').innerHTML;
   const memo      = document.getElementById('teacher-memo').value.trim();
 
