@@ -229,7 +229,7 @@
     <div class="card-title">🖼️ 원소 카드 ZIP 다운로드</div>
     <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.7">
       반을 선택하면 해당 반 학생들의 원소 카드를 ZIP으로 일괄 다운로드합니다.<br>
-      파일명: <code style="color:var(--accent)">반_번호_이름_앞면.png</code> 형식으로 저장됩니다.
+      파일명: <code style="color:var(--accent)">반_번호_이름_원소번호_앞면.png</code> 형식으로 저장됩니다.
     </p>
 
     <div class="search-box" style="margin-bottom:1rem">
@@ -261,7 +261,7 @@
     <p style="font-size:.88rem;color:var(--text-muted);line-height:2">
       · 카드를 아직 업로드하지 않은 학생은 자동으로 건너뜁니다<br>
       · 앞면과 뒷면이 각각 별도 파일로 저장됩니다<br>
-      · 파일명 형식: <code style="color:var(--accent)">2-1반_01번_김민준_앞면.png</code><br>
+      · 파일명 형식: <code style="color:var(--accent)">2-1반_01번_김민준_40번원소_앞면.png</code><br>
       · 브라우저 팝업 차단이 설정되어 있으면 다운로드가 안 될 수 있습니다
     </p>
   </div>
@@ -733,7 +733,7 @@ window.onDlClsChange = function() {
   info.innerHTML = `
     <div class="stats">
       <div class="stat">${cls}반 전체 <span>${total}명</span></div>
-      <div class="stat">예상 파일 수 <span>최대 ${total*2}개</span></div>
+      <div class="stat">예상 파일 수 <span>최대 ${total*4}개</span></div>
     </div>
     <div class="msg info" style="margin:0">
       업로드된 카드만 다운로드됩니다. 미업로드 학생은 자동 건너뜁니다.
