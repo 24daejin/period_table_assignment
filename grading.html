@@ -217,9 +217,16 @@
         <div class="panel" style="margin-bottom:1.25rem;">
           <div class="panel-header">
             📄 활동지 (1차시)
-            <div style="display:flex;gap:.5rem;align-items:center">
+            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
               <span id="pdf-page-info" style="font-size:.75rem;color:var(--text-muted)"></span>
-              <button class="btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="autoFindPage()">자동 페이지 찾기</button>
+              <div style="display:flex;align-items:center;gap:.3rem;">
+                <label style="font-size:.72rem;color:var(--text-muted);white-space:nowrap;">페이지</label>
+                <input type="number" id="pdf-page-input" min="1"
+                  style="width:52px;padding:.25rem .4rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Space Mono',monospace;font-size:.8rem;outline:none;text-align:center;"
+                  onchange="goToPageInput()"
+                  onkeydown="if(event.key==='Enter') goToPageInput()">
+              </div>
+              <button class="btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="autoFindPage()">자동</button>
             </div>
           </div>
           <div class="panel-body" style="padding:.75rem;">
@@ -575,9 +582,17 @@ async function renderPdfPage(pageNum) {
   await page.render({ canvasContext: ctx, viewport: vp }).promise;
   document.getElementById('pdf-page-num').textContent = `${pageNum} / ${totalPdfPages}`;
   document.getElementById('pdf-page-info').textContent = `${pageNum}p`;
+  const input = document.getElementById('pdf-page-input');
+  if (input) input.value = pageNum;
   document.getElementById('pdf-prev').disabled = pageNum <= 1;
   document.getElementById('pdf-next').disabled = pageNum >= totalPdfPages;
 }
+
+window.goToPageInput = function() {
+  const input = document.getElementById('pdf-page-input');
+  const page  = parseInt(input.value);
+  if (page >= 1 && page <= totalPdfPages) renderPdfPage(page);
+};
 
 window.changePdfPage = function(delta) { renderPdfPage(currentPdfPage + delta); };
 
