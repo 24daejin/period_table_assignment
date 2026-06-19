@@ -146,7 +146,8 @@
   <div class="logo">⚗️ 원소<span>카드 AI 채점</span></div>
   <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
     <span id="header-progress" style="font-size:.8rem;color:var(--text-muted)"></span>
-    <button class="btn btn-success" id="btn-export" onclick="exportExcel()" disabled>📥 엑셀 다운로드</button>
+    <button class="btn btn-success" id="btn-export" onclick="exportExcel()" disabled>📥 현재 반 엑셀</button>
+    <button class="btn" id="btn-export-all" onclick="exportAllExcel()" style="border-color:var(--success);color:var(--success);">📥 전체 반 엑셀</button>
     <a href="converter.html" class="btn">← 관리 도구</a>
   </div>
 </header>
@@ -262,6 +263,15 @@
           <div class="panel-body">
 
             <div id="ai-status"></div>
+
+            <!-- 손글씨 인식 결과 (채점 근거) -->
+            <div id="transcript-box" class="ai-result hidden" style="border-color:var(--accent);background:rgba(79,142,247,.05);">
+              <div class="ai-label" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleTranscript()">
+                <span>📝 AI가 인식한 활동지 손글씨 내용 (채점 근거)</span>
+                <span id="transcript-toggle-icon" style="font-size:.7rem;">▼ 펼치기</span>
+              </div>
+              <div class="ai-text" id="ai-transcript" style="white-space:pre-line;display:none;margin-top:.5rem;"></div>
+            </div>
 
             <!-- AI 결과 요약 -->
             <div id="ai-result-box" class="ai-result hidden">
@@ -539,6 +549,9 @@ window.goToStudent = function(idx) {
   resetScoreButtons();
   document.getElementById('teacher-memo').value = '';
   document.getElementById('ai-result-box').classList.add('hidden');
+  document.getElementById('transcript-box').classList.add('hidden');
+  document.getElementById('ai-transcript').style.display = 'none';
+  document.getElementById('transcript-toggle-icon').textContent = '▼ 펼치기';
   document.getElementById('ai-status').innerHTML = '';
   document.getElementById('save-status').innerHTML = '';
 
@@ -552,6 +565,10 @@ window.goToStudent = function(idx) {
       document.getElementById('ai-comment').innerHTML = existing.aiComment;
       document.getElementById('ai-result-box').classList.remove('hidden');
     }
+    if (existing.aiTranscript) {
+      document.getElementById('ai-transcript').textContent = existing.aiTranscript;
+      document.getElementById('transcript-box').classList.remove('hidden');
+    }
   }
 
   updateTotal();
@@ -564,6 +581,14 @@ window.goToStudent = function(idx) {
 function findScoreBtn(groupId, score) {
   return document.querySelector(`#${groupId} .score-btn.s-${score}`);
 }
+
+window.toggleTranscript = function() {
+  const body = document.getElementById('ai-transcript');
+  const icon = document.getElementById('transcript-toggle-icon');
+  const show = body.style.display === 'none';
+  body.style.display = show ? 'block' : 'none';
+  icon.textContent = show ? '▲ 접기' : '▼ 펼치기';
+};
 
 window.prevStudent = function() { goToStudent(currentIdx - 1); };
 window.nextStudent = function() { goToStudent(currentIdx + 1); };
@@ -757,13 +782,19 @@ window.runAI = async function() {
    - 중(15): 원소 카드 1개 제출
    - 하(10): 미제출
 
+[손글씨 인식 결과 제공 - 매우 중요]
+- 채점 근거를 투명하게 보여주기 위해, 활동지에서 인식한 손글씨 내용을 transcript 필드에 그대로 옮겨 적으세요.
+- 두 원소 각각의 기본정보와 심화내용 항목을 인식한 그대로(원문 그대로) 정리합니다.
+- 글자가 불확실하면 "(판독불가)"로 표시하세요. 임의로 추측해서 채우지 마세요.
+
 JSON 형식:
 {
   "accuracy": <20|25|30|35|40>,
   "creativity": <20|25|30|35|40>,
   "completion": <10|15|20>,
   "total": <accuracy+creativity+completion>,
-  "comment": "<한국어로 작성. ① 내용 정확성(활동지 기준): 기본정보 오류 여부와 심화내용 충실도 구체적으로 언급. ② 창의성(카드 기준): 이미지 구성과 원소 특성 연결성 구체적으로 언급. 각각 1~2문장>"
+  "transcript": "<활동지에서 인식한 손글씨 내용을 원소1, 원소2로 나누어 정리. 형식 예시: '[원소1] 기호: Cl / 원자번호: 17 / 원자질량: 35.453 / 주요성질: ... / 같은족유사성: ... / 활용사례: ... / 이름유래: ...  [원소2] 기호: Zr / ...' >",
+  "comment": "<한국어로 작성. ① 내용 정확성(활동지 기준): transcript에 근거하여 기본정보 오류 여부와 심화내용 충실도 구체적으로 언급. ② 창의성(카드 기준): 이미지 구성과 원소 특성 연결성 구체적으로 언급. 각각 1~2문장>"
 }`;
 
     // 메시지 콘텐츠 구성 (OpenAI vision 형식)
@@ -808,6 +839,14 @@ JSON 형식:
     setScore('creativity', result.creativity, findScoreBtn('score-creativity', result.creativity));
     setScore('completion', result.completion, findScoreBtn('score-completion', result.completion));
 
+    // 손글씨 인식 결과(채점 근거) 표시
+    if (result.transcript) {
+      document.getElementById('ai-transcript').textContent = result.transcript;
+      document.getElementById('transcript-box').classList.remove('hidden');
+      document.getElementById('ai-transcript').style.display = 'block';
+      document.getElementById('transcript-toggle-icon').textContent = '▲ 접기';
+    }
+
     // 코멘트 표시
     const commentEl = document.getElementById('ai-comment');
     commentEl.innerHTML = `<strong>내용 정확성:</strong> ${result.accuracy}점 / <strong>창의성:</strong> ${result.creativity}점 / <strong>완성도:</strong> ${result.completion}점<br><br>${result.comment}`;
@@ -842,14 +881,16 @@ window.saveGrade = async function() {
   }
 
   const total = tempScores.accuracy + tempScores.creativity + tempScores.completion;
-  const aiComment = document.getElementById('ai-comment').innerHTML;
-  const memo      = document.getElementById('teacher-memo').value.trim();
+  const aiComment    = document.getElementById('ai-comment').innerHTML;
+  const aiTranscript = document.getElementById('ai-transcript').textContent;
+  const memo         = document.getElementById('teacher-memo').value.trim();
 
   const gradeData = {
     ...tempScores,
     total,
     memo,
     aiComment,
+    aiTranscript,
     gradedAt: new Date().toISOString(),
     studentName: s.name,
     cls: currentCls,
@@ -933,6 +974,75 @@ window.exportExcel = function() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, `${currentCls}반 채점결과`);
   XLSX.writeFile(wb, `원소카드_채점결과_${currentCls}반.xlsx`);
+};
+
+// ── 전체 반 일괄 엑셀 다운로드 ──
+window.exportAllExcel = async function() {
+  const btn = document.getElementById('btn-export-all');
+  btn.disabled = true;
+  btn.textContent = '⏳ 불러오는 중...';
+
+  try {
+    const assignSnap = await getDoc(doc(db, 'converter', 'assignments'));
+    if (!assignSnap.exists()) { alert('배정 데이터가 없습니다.'); return; }
+    const assignData = assignSnap.data();
+    const clsList    = assignData.classList || [];
+
+    const wb = XLSX.utils.book_new();
+    const summaryRows = [['반', '번호', '이름', '원소1', '원소2', '내용정확성', '창의성', '완성도', '총점', '교사메모', '채점일시']];
+
+    for (const cls of clsList) {
+      const clsStudents = Object.entries(assignData.assignments || {})
+        .filter(([, s]) => s.clsKey === cls && s.elem1 !== null)
+        .map(([sid, s]) => ({ studentId: sid, name: s.name, num: s.num, elements: [s.elem1, s.elem2] }))
+        .sort((a, b) => a.num - b.num);
+
+      const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const gradeSnap = await getDocs(collection(db, 'grades', cls, 'students'));
+      const clsGrades = {};
+      gradeSnap.forEach(d => { clsGrades[d.id] = d.data(); });
+
+      // 반별 시트
+      const sheetRows = [['번호', '이름', '원소1', '원소2', '내용정확성', '창의성', '완성도', '총점', '교사메모', '채점일시']];
+      clsStudents.forEach(s => {
+        const g = clsGrades[s.studentId];
+        sheetRows.push([
+          s.num, s.name,
+          s.elements[0] || '', s.elements[1] || '',
+          g?.accuracy ?? '', g?.creativity ?? '', g?.completion ?? '',
+          g?.total ?? '',
+          g?.memo ?? '',
+          g?.gradedAt ? new Date(g.gradedAt).toLocaleString('ko-KR') : '',
+        ]);
+        summaryRows.push([
+          cls + '반', s.num, s.name,
+          s.elements[0] || '', s.elements[1] || '',
+          g?.accuracy ?? '', g?.creativity ?? '', g?.completion ?? '',
+          g?.total ?? '',
+          g?.memo ?? '',
+          g?.gradedAt ? new Date(g.gradedAt).toLocaleString('ko-KR') : '',
+        ]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(sheetRows);
+      ws['!cols'] = [{wch:6},{wch:10},{wch:6},{wch:6},{wch:12},{wch:10},{wch:8},{wch:8},{wch:30},{wch:20}];
+      XLSX.utils.book_append_sheet(wb, ws, `${cls}반`);
+    }
+
+    // 전체 요약 시트를 맨 앞에
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+    wsSummary['!cols'] = [{wch:8},{wch:6},{wch:10},{wch:6},{wch:6},{wch:12},{wch:10},{wch:8},{wch:8},{wch:30},{wch:20}];
+    wb.SheetNames.unshift('전체요약');
+    wb.Sheets['전체요약'] = wsSummary;
+
+    XLSX.writeFile(wb, `원소카드_채점결과_전체.xlsx`);
+  } catch(err) {
+    console.error(err);
+    alert('오류 발생: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📥 전체 반 엑셀';
+  }
 };
 
 init();
