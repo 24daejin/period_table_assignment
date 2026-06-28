@@ -146,6 +146,7 @@
   <div class="logo">⚗️ 원소<span>카드 AI 채점</span></div>
   <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
     <span id="header-progress" style="font-size:.8rem;color:var(--text-muted)"></span>
+    <button class="btn" id="btn-record-all" onclick="generateAllRecords()" disabled style="border-color:var(--accent2);color:var(--accent2);">📝 생기부 일괄 작성</button>
     <button class="btn btn-success" id="btn-export" onclick="exportExcel()" disabled>📥 현재 반 엑셀</button>
     <button class="btn" id="btn-export-all" onclick="exportAllExcel()" style="border-color:var(--success);color:var(--success);">📥 전체 반 엑셀</button>
     <a href="converter.html" class="btn">← 관리 도구</a>
@@ -394,24 +395,8 @@
             <tbody id="summary-tbody"></tbody>
           </table>
         </div>
-      </div>
-    </div>
-
-    <!-- 반 전체 생기부 일괄 생성 -->
-    <div class="panel" style="margin-top:1.5rem;">
-      <div class="panel-header">
-        📝 생활기록부 일괄 작성
-        <button class="btn btn-primary" id="btn-record-all" onclick="generateAllRecords()" style="font-size:.78rem;padding:.4rem .9rem;">
-          채점 완료 학생 전원 초안 생성
-        </button>
-      </div>
-      <div class="panel-body">
-        <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;line-height:1.6;">
-          이 반에서 <strong style="color:var(--text);">채점이 저장된 학생 전원</strong>의 점수·코멘트·손글씨 인식 내용과 <strong style="color:var(--text);">원소 카드 이미지</strong>를 함께 AI에 전달하여, <strong style="color:var(--accent);">학생 간 표현이 중복되지 않도록</strong> 생기부 초안을 일괄 생성합니다.<br>
-          카드 이미지까지 함께 분석하므로 학생 수가 많으면 1~3분 정도 걸릴 수 있어요. 생성 후에는 위쪽 학생별 채점 화면에서 한 명씩 열어 검토·수정할 수 있습니다.
-        </p>
-        <div id="record-all-status"></div>
-        <div class="progress-grid" id="record-all-progress" style="margin-top:.75rem;"></div>
+        <div id="record-all-status" style="margin-top:.75rem;"></div>
+        <div class="progress-grid" id="record-all-progress" style="margin-top:.5rem;"></div>
       </div>
     </div>
 
@@ -544,6 +529,7 @@ window.startGrading = async function() {
 
   document.getElementById('setup-card').classList.add('hidden');
   document.getElementById('grading-main').classList.remove('hidden');
+  document.getElementById('btn-record-all').disabled = false;
   document.getElementById('nav-cls').textContent = currentCls + '반';
   document.getElementById('nav-total').textContent = allStudents.length;
 
