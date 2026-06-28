@@ -429,14 +429,14 @@ window.onClsChange = function() {
   checkCanStart();
 };
 
-window.handlePdf = function(e) {
+window.handlePdf = async function(e) {
   const file = e.target.files[0];
   if (!file) return;
   const fn = document.getElementById('pdf-filename');
   fn.textContent = file.name;
   fn.classList.remove('hidden');
   document.getElementById('pdf-zone').classList.add('has-file');
-  loadPdfFile(file);
+  await loadPdfFile(file);
   checkCanStart();
 };
 
@@ -444,7 +444,7 @@ window.handlePdf = function(e) {
 const pdfZone = document.getElementById('pdf-zone');
 pdfZone.addEventListener('dragover', e => { e.preventDefault(); pdfZone.classList.add('dragover'); });
 pdfZone.addEventListener('dragleave', () => pdfZone.classList.remove('dragover'));
-pdfZone.addEventListener('drop', e => {
+pdfZone.addEventListener('drop', async e => {
   e.preventDefault(); pdfZone.classList.remove('dragover');
   const f = e.dataTransfer.files[0];
   if (f && f.type === 'application/pdf') {
@@ -452,7 +452,7 @@ pdfZone.addEventListener('drop', e => {
     const fn = document.getElementById('pdf-filename');
     fn.textContent = f.name; fn.classList.remove('hidden');
     pdfZone.classList.add('has-file');
-    loadPdfFile(f);
+    await loadPdfFile(f);
     checkCanStart();
   }
 });
