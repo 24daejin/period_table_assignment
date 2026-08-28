@@ -153,19 +153,24 @@
   <div class="login-card">
     <span class="login-icon">🔬</span>
     <p class="login-title">원소 주기율표</p>
-    <div class="login-cls-badge" id="login-cls-badge"></div>
-    <p class="login-desc">학번과 이름을 입력하면<br>주기율표를 함께 완성할 수 있어요</p>
-    <div class="form-group">
-      <label>학번</label>
-      <input type="text" id="input-student-id" placeholder="예: 20101" maxlength="10" onkeydown="if(event.key==='Enter')tryLogin()">
+    <div id="student-login-form">
+      <div class="login-cls-badge" id="login-cls-badge"></div>
+      <p class="login-desc">학번과 이름을 입력하면<br>주기율표를 함께 완성할 수 있어요</p>
+      <div class="form-group">
+        <label>학번</label>
+        <input type="text" id="input-student-id" placeholder="예: 20101" maxlength="10" onkeydown="if(event.key==='Enter')tryLogin()">
+      </div>
+      <div class="form-group">
+        <label>이름</label>
+        <input type="text" id="input-name" placeholder="홍길동" onkeydown="if(event.key==='Enter')tryLogin()">
+      </div>
+      <div id="login-error"></div>
+      <button class="login-btn" onclick="tryLogin()">입장하기</button>
+      <p class="login-note">로그인 정보는 이 기기에만 저장됩니다</p>
     </div>
-    <div class="form-group">
-      <label>이름</label>
-      <input type="text" id="input-name" placeholder="홍길동" onkeydown="if(event.key==='Enter')tryLogin()">
-    </div>
-    <div id="login-error"></div>
-    <button class="login-btn" onclick="tryLogin()">입장하기</button>
-    <p class="login-note">로그인 정보는 이 기기에만 저장됩니다</p>
+    <p id="no-class-note" style="display:none;font-size:.88rem;color:var(--text-muted);line-height:1.6;margin-bottom:.5rem">
+      학생은 담임 선생님이 공유한 반 전용 링크(<code style="color:var(--accent)">?class=2-1</code> 등)로 접속해 주세요.
+    </p>
     <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--border)">
       <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem">교사이신가요?</p>
       <div id="teacher-login-form" style="display:none">
@@ -322,9 +327,11 @@ let students = {}, currentUser = null, cardData = {}, unsubscribe = null;
 
 async function init() {
   if (!urlClass) {
-    // URL 파라미터 없어도 교사 로그인은 허용
+    // URL 파라미터 없어도 교사 로그인은 허용 (학생 로그인 폼은 숨김)
     document.getElementById('error-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('student-login-form').style.display = 'none';
+    document.getElementById('no-class-note').style.display = 'block';
   } else {
     document.getElementById('login-cls-badge').textContent = `${urlClass}반`;
     document.getElementById('class-badge').textContent     = `${urlClass}반`;
